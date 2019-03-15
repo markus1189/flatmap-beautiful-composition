@@ -55,6 +55,96 @@
 \end{itemize}
 \end{frame}
 
+\begin{frame}
+  \frametitle{Composition}
+  \begin{itemize}
+  \item what is composition
+  \item why it is important
+  \item how to achieve it
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{The Problem with Patterns}
+  \begin{itemize}
+  \item there a lot of standard patterns
+  \item but they do not easily compose
+  \item need to combine them in some ad-hoc way
+  \item quickly becomes very messy
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{The Case Study}
+  \begin{itemize}
+  \item we want to analyze text
+  \item collect metrics
+  \item single traversal
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Monoids}
+  \begin{itemize}
+  \item we can calculate our metrics with monoids
+  \item let's do that
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Metrics With Monoids}
+  \begin{itemize}
+  \item calculate some metrics like: words, chars, lines
+  \item some metrics cannot be expressed however
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{You can nest monoids}
+  \begin{itemize}
+  \item monoids compose naturally
+  \item handy because future of monoid is still a monoid
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Products of Monoids}
+  \begin{itemize}
+  \item a tuple of monoids is still a monoid, that works component wise
+  \item handy for our case study!
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{From Monoids To Applicatives}
+  \begin{itemize}
+  \item applicative functors are very similar to monoids
+  \item monoidal in the effects (pure = ``empty'' effect, ap = ``effect chaining'')
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{The Const Functor}
+  \begin{itemize}
+  \item the functor instance is a little strange
+  \item but the applicative instance is super awesome
+  \item allows you to lift any monoid into an applicative
+  \item that means we can still use everything we already have
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Metrics via Applicatives}
+\end{frame}
+
+\begin{frame}
+  \frametitle{The Problem}
+  \begin{itemize}
+  \item streaming is not possible with this approach
+  \item abstractions like Monoid and Applicative compose
+  \end{itemize}
+\end{frame}
+
 \section{Conclusion}\label{sec:conclusion}
 
 \begin{frame}
