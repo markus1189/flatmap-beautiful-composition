@@ -75,6 +75,14 @@
 \end{frame}
 
 \begin{frame}
+  \frametitle{Ways To Compose}
+  \begin{itemize}
+  \item nesting (composition)
+  \item tupling (multiple components in parallel)
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
   \frametitle{The Case Study}
   \begin{itemize}
   \item we want to analyze text
@@ -84,10 +92,21 @@
 \end{frame}
 
 \begin{frame}
+  \frametitle{Metrics}
+  \begin{itemize}
+  \item number of chars (count each char)
+  \item number of lines (count newline characters)
+  \item number of words (harder, because it is context sensitive)
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
   \frametitle{Monoids}
   \begin{itemize}
   \item we can calculate our metrics with monoids
-  \item let's do that
+  \item chars is the integer monoid with addition
+  \item lines is also the integer monoid, but only count 1 if char is a newline
+  \item for words, for now just split the input and count 1 on every ``group''
   \end{itemize}
 \end{frame}
 
@@ -135,13 +154,17 @@
 
 \begin{frame}
   \frametitle{Metrics via Applicatives}
+  \begin{itemize}
+  \item using applicatives we have all the power we need
+  \item use State, IO, Task, \dots
+  \end{itemize}
 \end{frame}
 
 \begin{frame}
-  \frametitle{The Problem}
+  \frametitle{The Tradeoffs}
   \begin{itemize}
-  \item streaming is not possible with this approach
-  \item abstractions like Monoid and Applicative compose
+  \item streaming is not possible with this approach, but only an example
+  \item abstractions like Monoid and Applicative compose nicely
   \end{itemize}
 \end{frame}
 
