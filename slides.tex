@@ -1,0 +1,65 @@
+\documentclass{beamer}
+
+% Must be loaded first
+\usepackage{tikz}
+
+\usepackage[utf8]{inputenc}
+\usepackage{textpos}
+
+% Font configuration
+\usepackage{fontspec}
+
+\input{font.tex}
+
+% Tikz for beautiful drawings
+\usetikzlibrary{mindmap,backgrounds}
+\usetikzlibrary{arrows.meta,arrows}
+\usetikzlibrary{shapes.geometric}
+
+% Minted configuration for source code highlighting
+\usepackage{minted}
+\setminted{highlightcolor=black!5, linenos}
+\setminted{style=lovelace}
+
+\usepackage[listings, minted]{tcolorbox}
+\tcbset{left=6mm}
+
+% Use the include theme
+\usetheme{codecentric}
+
+% Metadata
+\title{Free All The Things}
+\author{Markus Hauck}
+
+\newcommand{\recipe}{%
+  \begin{itemize}
+  \item AST
+  \item \texttt{inject}
+  \item interpreter
+  \item check laws
+  \end{itemize}
+}
+
+% The presentation content
+\begin{document}
+
+\begin{frame}[noframenumbering,plain]
+  \titlepage{}
+\end{frame}
+
+\section{Introduction}\label{sec:introduction}
+
+\begin{frame}
+\frametitle{Beautiful Composition}
+\begin{itemize}
+\end{itemize}
+\end{frame}
+
+\section{Conclusion}\label{sec:conclusion}
+
+\begin{frame}
+\end{frame}
+
+\appendix{}
+
+\end{document}
