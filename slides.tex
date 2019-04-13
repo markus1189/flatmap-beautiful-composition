@@ -1,4 +1,4 @@
-\documentclass{beamer}
+ \documentclass{beamer}
 
 % Must be loaded first
 \usepackage{tikz}
@@ -50,9 +50,25 @@
 \section{Introduction}\label{sec:introduction}
 
 \begin{frame}
-\frametitle{Beautiful Composition}
-\begin{itemize}
-\end{itemize}
+  \frametitle{Beautiful Composition}
+  \begin{itemize}
+  \item Themes in this presentation:
+    \begin{itemize}
+    \item open for extension, closed for modification
+    \item composition, composition, composition
+    \item the principle of least power
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Open Closed Principle}
+  \begin{itemize}
+  \item remember the open closed principle?
+  \item open for extension
+  \item closed for modification
+  \item if applied correctly, this means heaven
+  \end{itemize}
 \end{frame}
 
 \begin{frame}
@@ -65,12 +81,9 @@
 \end{frame}
 
 \begin{frame}
-  \frametitle{The Problem with Patterns}
+  \frametitle{The Principle Of Least Power}
   \begin{itemize}
-  \item there a lot of standard patterns
-  \item but they do not easily compose
-  \item need to combine them in some ad-hoc way
-  \item quickly becomes very messy
+  \item https://www.w3.org/DesignIssues/Principles.html
   \end{itemize}
 \end{frame}
 
@@ -91,13 +104,30 @@
   \end{itemize}
 \end{frame}
 
+\begin{frame}[fragile]
+  \frametitle{A First Solution}
+  \inputminted{scala}{snippets/imperative-wc.scala}
+  \begin{itemize}
+  \item translation from ``The Essence Of The Iterator Pattern'' by Jeremy Gibbons
+  \item Mix of the three metrics
+  \item Not modular: hard to only run a subset of metrics
+  \item Fixes the control flow, not easy to change from sequential to batch
+  \end{itemize}
+\end{frame}
+
 \begin{frame}
   \frametitle{Metrics}
   \begin{itemize}
   \item number of chars (count each char)
   \item number of lines (count newline characters)
   \item number of words (harder, because it is context sensitive)
+  \item open for extension (closed for modification)
   \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Let's Get Our FP Tools!}
+  % image of toolset?
 \end{frame}
 
 \begin{frame}
@@ -149,6 +179,7 @@
   \item but the applicative instance is super awesome
   \item allows you to lift any monoid into an applicative
   \item that means we can still use everything we already have
+  \item (nb: Const is a monoid isomorphism)
   \end{itemize}
 \end{frame}
 
@@ -156,7 +187,62 @@
   \frametitle{Metrics via Applicatives}
   \begin{itemize}
   \item using applicatives we have all the power we need
-  \item use State, IO, Task, \dots
+  \item use State, IO, Task, \ldots
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Brand New: Selective Functors}
+  \begin{itemize}
+  \item like applicatives, we can use a product of selective functors
+  \item example: find the index of a word
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Okay but traversing Lists is boring!}
+  \begin{itemize}
+  \item but there is no \texttt{traverse} for real streams?!
+  \item because there can't be one\ldots
+  \item but: do we need the actual \texttt{traverse}?
+  \item realization: \texttt{traverse\_} is enough!
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Traverse}
+  \begin{itemize}
+  \item so what's the difference between \texttt{traverse} and \texttt{traverse\_}
+  \item the regular \texttt{traverse} keeps the whole structure!
+  \item the \texttt{traverse\_} variant only secquences effects!
+  \item and again: Applicative effect sequencing is associative (parallel!)
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Traversing with State}
+  \begin{itemize}
+  \item using State, we can still iterate imperatively
+  \item but we can keep keep the parts separate and \textbf{compose} them!
+  \item all the power from the normal imperative approach with all the benefits
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Traversing Streams}
+  \begin{itemize}
+  \item calculate length as well as do something
+  \item log element and also write to db
+  \item keep concerns separate and isolated
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Composition}
+  \begin{itemize}
+  \item use \texttt{Nested} to nest applicatives for ultimate power
+  \item separate state update and retrieval + counting
+  \item important gotcha: no real streaming depending on the applicative! (state...)
   \end{itemize}
 \end{frame}
 
@@ -171,6 +257,12 @@
 \section{Conclusion}\label{sec:conclusion}
 
 \begin{frame}
+  \frametitle{Conclusion}
+  \begin{itemize}
+  \item we can add metrics easily
+  \item control flow can be easily customized
+  \item (Sometimes) Monads are overrated
+  \end{itemize}
 \end{frame}
 
 \appendix{}
