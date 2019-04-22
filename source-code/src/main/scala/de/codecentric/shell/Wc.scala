@@ -7,10 +7,10 @@ import scala.sys.process._
 trait Wc {
 
   def run(path: Path): (Int, Int, Int) = {
-    val Array(nw, nl, nc) =
-      s"wc $path".!!.split("""\s+""").drop(1).dropRight(1).map(_.toInt)
-
-    (nw, nl, nc)
+    s"wc $path".!!.split("""\s+""").dropWhile(_.forall(_.isWhitespace)).dropRight(1).map(_.toInt) match {
+      case Array(nw, nl, nc) => (nw, nl, nc)
+      case r                 => throw new RuntimeException(s"Match error: ${r.toList} for file $path")
+    }
   }
 }
 

@@ -28,7 +28,7 @@
 \usetheme{codecentric}
 
 % Metadata
-\title{Free All The Things}
+\title{Beautiful Composition}
 \author{Markus Hauck}
 
 \newcommand{\recipe}{%
@@ -72,18 +72,18 @@
 \end{frame}
 
 \begin{frame}
+  \frametitle{The Principle Of Least Power}
+  \begin{itemize}
+  \item https://www.w3.org/DesignIssues/Principles.html
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
   \frametitle{Composition}
   \begin{itemize}
   \item what is composition
   \item why it is important
   \item how to achieve it
-  \end{itemize}
-\end{frame}
-
-\begin{frame}
-  \frametitle{The Principle Of Least Power}
-  \begin{itemize}
-  \item https://www.w3.org/DesignIssues/Principles.html
   \end{itemize}
 \end{frame}
 
@@ -106,13 +106,7 @@
 
 \begin{frame}[fragile]
   \frametitle{A First Solution}
-  \inputminted{scala}{snippets/imperative-wc.scala}
-  \begin{itemize}
-  \item translation from ``The Essence Of The Iterator Pattern'' by Jeremy Gibbons
-  \item Mix of the three metrics
-  \item Not modular: hard to only run a subset of metrics
-  \item Fixes the control flow, not easy to change from sequential to batch
-  \end{itemize}
+  \inputminted[fontsize=\small]{scala}{snippets/imperative-wc.scala}
 \end{frame}
 
 \begin{frame}
@@ -133,6 +127,25 @@
 \begin{frame}
   \frametitle{Monoids}
   \begin{itemize}
+  \item Quick Recap: Monoids
+  \item binary method \texttt{combine} and nullary method \texttt{combine}
+    \begin{minted}{scala}
+      trait Monoid[A] {
+        def combine(x: A, y: A): A
+        def empty: A
+      }
+    \end{minted}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Calculating With Monoids}
+  \begin{itemize}
+
+  \item adding things (or multiplying)
+  \item min and max
+  \item map of key to value (for any monoid as value)
+  \item ...
   \item we can calculate our metrics with monoids
   \item chars is the integer monoid with addition
   \item lines is also the integer monoid, but only count 1 if char is a newline
@@ -200,7 +213,15 @@
 \end{frame}
 
 \begin{frame}
-  \frametitle{Okay but traversing Lists is boring!}
+  \frametitle{Using Foldable and Traverse}
+  \begin{itemize}
+  \item we can use Foldable and Traverse to abstract over the data structure
+  \item both can also be composed!
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Okay but traversing Lists/Iterators/etc is suboptimal!}
   \begin{itemize}
   \item but there is no \texttt{traverse} for real streams?!
   \item because there can't be one\ldots
@@ -210,7 +231,7 @@
 \end{frame}
 
 \begin{frame}
-  \frametitle{Traverse}
+  \frametitle{Traverse and Foldable}
   \begin{itemize}
   \item so what's the difference between \texttt{traverse} and \texttt{traverse\_}
   \item the regular \texttt{traverse} keeps the whole structure!
@@ -251,6 +272,15 @@
   \begin{itemize}
   \item streaming is not possible with this approach, but only an example
   \item abstractions like Monoid and Applicative compose nicely
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Monadic composition?}
+  \begin{itemize}
+  \item monadic composition is not nearly as nice
+  \item needs commutative monads
+  \item see essence iterator 5.4
   \end{itemize}
 \end{frame}
 
