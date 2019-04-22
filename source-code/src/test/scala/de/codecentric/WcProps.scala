@@ -2,9 +2,12 @@ package de.codecentric
 
 import java.io.{File, PrintWriter}
 
+import akka.actor.ActorSystem
+import akka.stream.ActorMaterializer
 import cats.instances.int._
 import cats.instances.tuple._
 import cats.syntax.eq._
+import de.codecentric.applicative.stream.Wc
 import org.scalacheck.Prop.BooleanOperators
 import org.scalacheck.{Prop, Properties}
 
@@ -17,7 +20,18 @@ class WcProps extends Properties("WordCount") {
 
   propertyWithSeed("applicative-io vs shell", None) =
     wordCountProp("applicative-io")(applicative.io.Wc.run)
-  
+
+  propertyWithSeed("applicative-io-stream vs shell", None) = {
+    implicit val system: ActorSystem = ActorSystem()
+    val mat: ActorMaterializer = ActorMaterializer()
+
+    val wc = new Wc {
+      override def materializer: ActorMaterializer = mat
+    }
+
+      wordCountProp("applicative-io-stream")(wc.run)
+    }
+
   private[this] def wordCountProp(propName: String)(
       run: Iterator[Char] => (Int, Int, Int)): Prop =
     Prop.forAll(WcGen.text) { text =>

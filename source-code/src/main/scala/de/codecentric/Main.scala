@@ -5,14 +5,11 @@ import java.time.LocalDateTime
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Keep, Sink, Source}
-import cats.{Applicative, Eval}
 import cats.data._
+import cats.instances.int._
 import cats.syntax.applicative._
 import cats.syntax.apply._
-import cats.instances.int._
-import cats.instances.list._
-import cats.instances.set._
-import cats.instances.tuple._
+import cats.{Applicative, Eval}
 
 import scala.concurrent.Future
 
@@ -51,7 +48,7 @@ object Hello extends App {
     }
   }
 
-  def sinkTraverse_[F[_]:Applicative, A](f: A => F[Unit]): Sink[A, Future[F[Unit]]] = Sink.fold[F[Unit],A](().pure[F])((u, a) => u *> f(a))
+  def sinkTraverse_[F[_]:Applicative, A](f: A => F[Unit]): Sink[A, Future[F[Unit]]] = Sink.fold[F[Unit],A](().pure[F])((u, a) => u <* f(a))
 
   implicit val system = ActorSystem()
   implicit val mat = ActorMaterializer()
