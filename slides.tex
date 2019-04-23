@@ -2,6 +2,7 @@
 
 % Must be loaded first
 \usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
 
 \usepackage[utf8]{inputenc}
 \usepackage{textpos}
@@ -48,6 +49,15 @@
 \end{frame}
 
 \section{Introduction}\label{sec:introduction}
+
+\begin{frame}
+  \frametitle{Just Imagine}
+  \begin{itemize}
+  \item a world where your abstractions just fit together
+  \item like lego blocks
+  \item combinations everywhere
+  \end{itemize}
+\end{frame}
 
 \begin{frame}
   \frametitle{Beautiful Composition}
@@ -119,12 +129,14 @@
   \end{itemize}
 \end{frame}
 
+\section{monoids}\label{sec:monoids}
+
 \begin{frame}
   \frametitle{Let's Get Our FP Tools!}
   % image of toolset?
 \end{frame}
 
-\begin{frame}
+\begin{frame}[fragile]
   \frametitle{Monoids}
   \begin{itemize}
   \item Quick Recap: Monoids
@@ -136,6 +148,73 @@
       }
     \end{minted}
   \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Monoids: Basic Idea}
+  \begin{itemize}
+  \item basic approach: iterate over all \texttt{Char} and accumulate using a monoid
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Monoids}
+  \begin{tikzpicture}[node distance = 2cm, auto]
+    \tikzstyle{decision} = [diamond, draw, fill=blue!20,
+    text width=4.5em, text badly centered, node distance=3cm, inner sep=0pt]
+\tikzstyle{block} = [rectangle, draw, fill=blue!20,
+    text width=5em, text centered, rounded corners, minimum height=4em]
+\tikzstyle{line} = [draw, -latex']
+\tikzstyle{cloud} = [draw, ellipse,fill=red!20, node distance=3cm,
+minimum height=2em]
+
+    % Place nodes
+    \node [block] (init) {initialize model};
+    \node [cloud, left of=init] (expert) {expert};
+    \node [cloud, right of=init] (system) {system};
+    \node [block, below of=init] (identify) {identify candidate models};
+    \node [block, below of=identify] (evaluate) {evaluate candidate models};
+    \node [block, left of=evaluate, node distance=3cm] (update) {update model};
+    \node [decision, below of=evaluate] (decide) {is best candidate better?};
+    \node [block, below of=decide, node distance=3cm] (stop) {stop};
+    % Draw edges
+    \path [line] (init) -- (identify);
+    \path [line] (identify) -- (evaluate);
+    \path [line] (evaluate) -- (decide);
+    \path [line] (decide) -| node [near start] {yes} (update);
+    \path [line] (update) |- (identify);
+    \path [line] (decide) -- node {no}(stop);
+    \path [line,dashed] (expert) -- (init);
+    \path [line,dashed] (system) -- (init);
+    \path [line,dashed] (system) |- (evaluate);
+\end{tikzpicture}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Monoids}
+  \begin{tikzpicture}[node distance = 8mm, auto]
+    \tikzstyle{box} = [rectangle, draw, text centered, rounded corners, minimum width=6mm, minimum height=6mm]
+    \tikzstyle{line} = [draw, -latex']
+
+    \node [box, draw=none] (a0) {};
+    \node [box, fill=beamer@centricgreen!70, right of=a0] (a1) {h};
+    \node [box, fill=beamer@codeblue!70, right of=a1] (a2) {e};
+    \node [box, fill=beamer@centricgreen!70, right of=a2] (a3) {l};
+    \node [box, fill=beamer@codeblue!70, right of=a3] (a4) {l};
+    \node [box, fill=beamer@centricgreen!70, right of=a4] (a5) {o};
+    \node [box, fill=beamer@codeblue!70, right of=a5] (a6) { };
+    \node [box, fill=beamer@centricgreen!70, right of=a6] (a7) {w};
+    \node [box, fill=beamer@codeblue!70, right of=a7] (a8) {o};
+    \node [box, fill=beamer@centricgreen!70, right of=a8] (a9) {r};
+    \node [box, fill=beamer@codeblue!70, right of=a9] (a10) {l};
+    \node [box, fill=beamer@centricgreen!70, right of=a10] (a11) {d};
+    \node [box, fill=beamer@codeblue!70, right of=a11] (a12) {!};
+
+    \foreach \char/\pos in {h/1,e/2,l/3,l/4,o/5, /6,w/7,o/8,r/9,l/10,d/11,!/12} {
+      \node [box, below of=a\pos] (b\pos) {\char};
+      \path [line] (b\pos) -- (a\pos);
+    }
+\end{tikzpicture}
 \end{frame}
 
 \begin{frame}
