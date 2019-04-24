@@ -1,4 +1,4 @@
- \documentclass{beamer}
+ \documentclass[aspectratio=169]{beamer}
 
 % Must be loaded first
 \usepackage{tikz}
@@ -210,9 +210,11 @@ minimum height=2em]
     \node [box, fill=beamer@centricgreen!70, right of=a10] (a11) {d};
     \node [box, fill=beamer@codeblue!70, right of=a11] (a12) {!};
 
-    \foreach \char/\pos in {h/1,e/2,l/3,l/4,o/5, /6,w/7,o/8,r/9,l/10,d/11,!/12} {
-      \node [box, below of=a\pos] (b\pos) {\char};
+    \foreach \char [count=\pos, evaluate=\pos as \i using int(\pos-1)] in {h,e,l,l,o, ,w,o,r,l,d,!} {
+      \only<\pos>{
+      \node [box, below of=a\pos, yshift=-5mm] (b\pos) {\i\ + 1 = \pos};
       \path [line] (b\pos) -- (a\pos);
+      }
     }
 \end{tikzpicture}
 \end{frame}
