@@ -74,7 +74,7 @@ addOracles = do
                                                   ,"--no-stderr"
                                                   ,"--stdout"
                                                   ,"--config-str"
-                                                  ,"maxColumn = 55"
+                                                  ,"maxColumn = 70"
                                                   ]
   _ <- addOracle $ \(DitaaOptions _) -> return ["--scale"
                                                ,"3"

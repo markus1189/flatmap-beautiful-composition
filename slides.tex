@@ -32,15 +32,6 @@
 \title{Beautiful Composition}
 \author{Markus Hauck}
 
-\newcommand{\recipe}{%
-  \begin{itemize}
-  \item AST
-  \item \texttt{inject}
-  \item interpreter
-  \item check laws
-  \end{itemize}
-}
-
 % The presentation content
 \begin{document}
 
@@ -68,6 +59,17 @@
     \item composition, composition, composition
     \item the principle of least power
     \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Content}
+  \begin{itemize}
+  \item \hyperref[sec:introduction]{Introduction}
+  \item \hyperref[sec:monoids]{Monoids}
+  \item \hyperref[sec:applicatives]{Applicatives}
+  \item \hyperref[sec:streaming]{Streaming}
+  \item \hyperref[sec:conclusion]{Conclusion}
   \end{itemize}
 \end{frame}
 
@@ -129,7 +131,7 @@
   \end{itemize}
 \end{frame}
 
-\section{monoids}\label{sec:monoids}
+\section{Monoids}\label{sec:monoids}
 
 \begin{frame}
   \frametitle{Let's Get Our FP Tools!}
@@ -191,32 +193,81 @@ minimum height=2em]
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Monoids}
+  \frametitle{Monoids: Counting Chars}
+  \begin{itemize}
+  \item counting chars is easy, use \texttt{(Int, +)} as a Monoid
+  \item count 1 (\texttt{mappend} 1) for every character
+  \end{itemize}
   \begin{tikzpicture}[node distance = 8mm, auto]
     \tikzstyle{box} = [rectangle, draw, text centered, rounded corners, minimum width=6mm, minimum height=6mm]
     \tikzstyle{line} = [draw, -latex']
 
     \node [box, draw=none] (a0) {};
-    \node [box, fill=beamer@centricgreen!70, right of=a0] (a1) {h};
-    \node [box, fill=beamer@codeblue!70, right of=a1] (a2) {e};
-    \node [box, fill=beamer@centricgreen!70, right of=a2] (a3) {l};
-    \node [box, fill=beamer@codeblue!70, right of=a3] (a4) {l};
-    \node [box, fill=beamer@centricgreen!70, right of=a4] (a5) {o};
-    \node [box, fill=beamer@codeblue!70, right of=a5] (a6) { };
-    \node [box, fill=beamer@centricgreen!70, right of=a6] (a7) {w};
-    \node [box, fill=beamer@codeblue!70, right of=a7] (a8) {o};
-    \node [box, fill=beamer@centricgreen!70, right of=a8] (a9) {r};
-    \node [box, fill=beamer@codeblue!70, right of=a9] (a10) {l};
-    \node [box, fill=beamer@centricgreen!70, right of=a10] (a11) {d};
-    \node [box, fill=beamer@codeblue!70, right of=a11] (a12) {!};
 
-    \foreach \char [count=\pos, evaluate=\pos as \i using int(\pos-1)] in {h,e,l,l,o, ,w,o,r,l,d,!} {
+    \foreach \char [count=\pos, evaluate=\pos as \i using int(\pos-1)] in {h,e,l,l,o,\textbackslash{n},w,o,r,l,d,!,\textbackslash{n}} {
+      \ifthenelse{\isodd{\pos}}{
+        \node [box, fill=beamer@codeblue!70, right of=a\i] (a\pos) {\char};
+      }{
+        \node [box, fill=beamer@centricgreen!70, right of=a\i] (a\pos) {\char};
+      }
       \only<\pos>{
-      \node [box, below of=a\pos, yshift=-5mm] (b\pos) {\i\ + 1 = \pos};
-      \path [line] (b\pos) -- (a\pos);
+        \node [box, below of=a\pos, yshift=-5mm] (b\pos) {\i\ + 1 = \pos};
+        \path [line] (b\pos) -- (a\pos);
       }
     }
-\end{tikzpicture}
+  \end{tikzpicture}
+
+  \vfill
+  \only<13>{
+    \begin{itemize}
+    \item so the result is 13 chars in total
+    \end{itemize}
+  }
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Monoids: Counting Chars}
+  \begin{itemize}
+  \item to count lines, use again \texttt{(Int, +)} as a Monoid
+  \item but \textbf{only} count 1 if the character is a \textbackslash{n}
+  \end{itemize}
+  \begin{tikzpicture}[node distance = 8mm, auto]
+    \tikzstyle{box} = [rectangle, draw, text centered, rounded corners, minimum width=6mm, minimum height=6mm]
+    \tikzstyle{line} = [draw, -latex']
+
+    \node [box, draw=none] (a0) {};
+
+    \foreach \char [count=\pos, evaluate=\pos as \i using int(\pos-1)] in {h,e,l,l,o,\textbackslash{n},w,o,r,l,d,!,\textbackslash{n}} {
+      \ifthenelse{\isodd{\pos}}{
+        \node [box, fill=beamer@codeblue!70, right of=a\i] (a\pos) {\char};
+      }{
+        \node [box, fill=beamer@centricgreen!70, right of=a\i] (a\pos) {\char};
+      }
+      \only<\pos>{
+        \ifthenelse{\pos > 5}{
+          \ifthenelse{\pos > 12}{
+            \node [box, below of=a\pos, yshift=-5mm] (b\pos) {1\ + 1 = 2};
+          }{
+            \ifthenelse{\pos = 6}{
+              \node [box, below of=a\pos, yshift=-5mm] (b\pos) {0\ + 1 = 1};
+            }
+            {
+              \node [box, below of=a\pos, yshift=-5mm] (b\pos) {1\ + 0 = 1};
+            }
+          }
+        }{
+          \node [box, below of=a\pos, yshift=-5mm] (b\pos) {0 + 0 = 0};
+        }
+        \path [line] (b\pos) -- (a\pos);
+      }
+    }
+  \end{tikzpicture}
+
+  \only<13>{
+    \begin{itemize}
+    \item we counted 2 lines in total
+    \end{itemize}
+  }
 \end{frame}
 
 \begin{frame}
@@ -259,10 +310,39 @@ minimum height=2em]
 \end{frame}
 
 \begin{frame}
+  \frametitle{Wordcount (Monoids, Chars)}
+  \inputminted[fontsize=\footnotesize]{scala}{snippets/wc-monoid-char.scala}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Wordcount (Monoids, Strings)}
+  \inputminted[fontsize=\footnotesize]{scala}{snippets/wc-monoid-string.scala}
+\end{frame}
+
+\section{Applicatives}\label{sec:applicatives}
+
+\begin{frame}
   \frametitle{From Monoids To Applicatives}
   \begin{itemize}
-  \item applicative functors are very similar to monoids
-  \item monoidal in the effects (pure = ``empty'' effect, ap = ``effect chaining'')
+  \item also called \textbf{Monoidal} Functors
+  \item ``monoidal'' in the effects (pure = ``empty'' effect, \texttt{<*>} = ``combine effects'')
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{No Monoids?}
+  \begin{itemize}
+  \item but wait a moment, was all we learned about Monoids for nothing?!
+  \item rejoice, we can reuse \textbf{everything} we have until now
+  \item as we will see later
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Metrics via Applicatives}
+  \begin{itemize}
+  \item using applicatives we have all the power we need
+  \item use State, IO, Task, \ldots
   \end{itemize}
 \end{frame}
 
@@ -278,18 +358,39 @@ minimum height=2em]
 \end{frame}
 
 \begin{frame}
-  \frametitle{Metrics via Applicatives}
+  \frametitle{Traversing With Applicatives}
   \begin{itemize}
-  \item using applicatives we have all the power we need
-  \item use State, IO, Task, \ldots
+  \item instead of folding with monoids
+  \item \texttt{traverse} with applicatives
   \end{itemize}
 \end{frame}
 
 \begin{frame}
-  \frametitle{Brand New: Selective Functors}
+  \frametitle{Composing Applicatives}
   \begin{itemize}
-  \item like applicatives, we can use a product of selective functors
-  \item example: find the index of a word
+  \item so why not monads
+  \item applicatives compose (Nested)
+  \item and also work as a product (Tuple2K)
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Counting Words \textemdash{} With State}
+  \begin{itemize}
+  \item we can re-use the counting of chars and lines (and any monoidal metric)
+  \item as seen, have to be more clever for words
+  \item idea: keep track of state: \textbf{inside} vs \textbf{outside} a word
+  \item how to do this with applicatives?
+  \item \textbf{State}, IO, ST, \ldots{}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{State makes everything more complicated}
+  \begin{itemize}
+  \item but \textbf{State} has severe drawbacks\dots
+  \item TODO: semantics of traversing with state
+  \item get rid of the leak using IO + Ref (cats-effect)
   \end{itemize}
 \end{frame}
 
@@ -297,9 +398,11 @@ minimum height=2em]
   \frametitle{Using Foldable and Traverse}
   \begin{itemize}
   \item we can use Foldable and Traverse to abstract over the data structure
-  \item both can also be composed!
+  \item both can also be composed in turn!
   \end{itemize}
 \end{frame}
+
+\section{Streaming}\label{sec:streaming}
 
 \begin{frame}
   \frametitle{Okay but traversing Lists/Iterators/etc is suboptimal!}
@@ -376,6 +479,25 @@ minimum height=2em]
   \end{itemize}
 \end{frame}
 
+\begin{frame}
+  \frametitle{The End}
+  \begin{itemize}
+  \item \hyperref[sec:introduction]{Introduction}
+  \item \hyperref[sec:monoids]{Monoids}
+  \item \hyperref[sec:applicatives]{Applicatives}
+  \item \hyperref[sec:streaming]{Streaming}
+  \item \hyperref[sec:conclusion]{Conclusion}
+  \end{itemize}
+\end{frame}
+
 \appendix{}
+
+\begin{frame}
+  \frametitle{Brand New: Selective Functors}
+  \begin{itemize}
+  \item like applicatives, we can use a product of selective functors
+  \item example: find the index of a word
+  \end{itemize}
+\end{frame}
 
 \end{document}

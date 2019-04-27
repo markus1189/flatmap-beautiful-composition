@@ -1,13 +1,13 @@
-package de.codecentric.applicative.stream
+package de.codecentric.applicative.stream.akka
 
+import mouse.boolean._
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Keep, Sink, Source}
 import cats.data.{Const, Nested, Tuple2K}
 import cats.effect.IO
 import cats.effect.concurrent.Ref
-import cats.instances.int._
 import de.codecentric.applicative.Utils
-import mouse.boolean._
+import cats.instances.int._
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
@@ -24,17 +24,21 @@ trait Wc {
     Await.result(r, Duration.Inf)
   }
 
+  private[this] def countChars[A](c: Char): Const[Int, A] = Const.of(1)
+
+  private[this] def countLines[A](c: Char): Const[Int, A] =
+    (c == '\n') ?? Const.of[A](1)
+
+  private[this] def countWords[A](ref: Ref[IO, Boolean])(c: Char) = Nested {
+    for {
+      before <- ref.get
+      after = !c.isWhitespace
+      _ <- ref.set(after)
+    } yield (!before && after) ?? Const.of[A](1)
+  }
+
   def sink(
       implicit ec: ExecutionContext): Sink[Char, Future[(Int, Int, Int)]] = {
-    def countChars[A](c: Char): Const[Int, A] = Const.of(1)
-    def countLines[A](c: Char): Const[Int, A] = (c == '\n') ?? Const.of[A](1)
-    def countWords[A](ref: Ref[IO, Boolean])(c: Char) = Nested {
-      for {
-        before <- ref.get
-        after = !c.isWhitespace
-        _ <- ref.set(after)
-      } yield (!before && after) ?? Const.of[A](1)
-    }
 
     val ref = Ref.of[IO, Boolean](false).unsafeRunSync
 

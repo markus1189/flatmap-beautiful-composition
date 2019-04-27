@@ -7,7 +7,7 @@ import akka.stream.ActorMaterializer
 import cats.instances.int._
 import cats.instances.tuple._
 import cats.syntax.eq._
-import de.codecentric.applicative.stream.Wc
+import de.codecentric.applicative.stream.akka.Wc
 import org.scalacheck.Prop.BooleanOperators
 import org.scalacheck.{Prop, Properties}
 

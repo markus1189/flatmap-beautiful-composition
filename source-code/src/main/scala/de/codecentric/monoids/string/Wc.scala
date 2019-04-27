@@ -6,22 +6,24 @@ import cats.kernel.Monoid
 import mouse.boolean._
 
 trait Wc {
+  //snippet:wc-monoid-string
   def run(input: Iterator[Char]): (Int, Int, Int) =
+    // wordsAndSkipped: Iterator[Char] => Iterator[(Int, String)]
     runMonoid(step)(Wc.wordsAndSkipped(input))
 
   def runMonoid[M: Monoid](f: (Int, String) => M)(
-      input: Iterator[(Int, String)]): M = Monoid[M].combineAll(input.map(f.tupled))
+      input: Iterator[(Int, String)]): M =
+    Monoid[M].combineAll(input.map(f.tupled))
 
-  private[this] def step(skip: Int, w: String): (Int, Int, Int) = {
-    println(s"input is : '$w'")
-      (countLines(w), countWords(w), countChars(skip, w))
-    }
+  def step(skip: Int, w: String): (Int, Int, Int) =
+    (countLines(w), countWords(w), countChars(skip, w))
 
   def countLines(w: String): Int = w.contains("\n") ?? 1
 
-  def countWords(w: String): Int = 0 // shrug
+  def countWords(w: String): Int = 0 // how?
 
   def countChars(skip: Int, w: String): Int = skip + w.length
+//end
 }
 
 object Wc extends Wc {
