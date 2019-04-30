@@ -249,8 +249,8 @@
   \item for multiple metrics, do multiple passes?!
   \item no \textemdash{} because monoids \textbf{compose}
     \begin{itemize}
-    \item inductive: Monoid inside Monoid
-    \item product: tuple of Monoids
+    \item inductive: monoid + base monoid
+    \item product: tuple of monoids
     \end{itemize}
   \end{itemize}
 \end{frame}
@@ -263,21 +263,99 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}
-  \frametitle{Overview}
-  \def\firstcircle{(0,0) ellipse (20mm and 5mm)}
-  \def\secondcircle{(0,0) ellipse (25mm and 12mm)}
-  \def\thirdcircle{(0,0) ellipse (35mm and 20mm)}
-  \begin{tikzpicture}
-    \begin{scope}[fill opacity=0.5]
-      \fill[beamer@centricgreen!80] \firstcircle;
-      \fill[beamer@codeblue!80] \secondcircle;
-      \fill[red!10] \thirdcircle;
-      \draw \firstcircle node  {$Semigroup$};
-      \draw \secondcircle node [yshift=-5mm] {$Monoid$};
-      \draw \thirdcircle node [yshift=-10mm] {$Applicative$};
-    \end{scope}
+\begin{frame}[fragile]
+  \frametitle{Monoid Composition \textemdash{} Option And Stopwords}
+  \begin{itemize}
+  \item as an example: filter out (don't count) stopwords
+  \item stopwords = most common words that are not interesting (``the'', ``a'', \ldots{})
+  \item the Option-Monoid works like this:
+  \end{itemize}
+  \begin{center}
+  \begin{minted}{scala}
+None |+| y === y
+x |+| None === x
+Some(x) |+| Some(y) === Some(x |+| y)
+  \end{minted}
+\end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Monoid Composition \textemdash{} Option And Stopwords}
+  \begin{itemize}
+  \item idea: if it is a stopword, use None, otherwise regular count with Some
+  \end{itemize}
+  \begin{center}
+  \begin{minted}{scala}
+None |+| y === y
+x |+| None === x
+Some(x) |+| Some(y) === Some(x |+| y)
+  \end{minted}
+\end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Monoid Composition \textemdash{} Option And Stopwords}
+  \begin{itemize}
+  \item assuming both ``is'' and ``a'' are classified as stopwords:
+  \end{itemize}
+  \vspace{1cm}
+  \begin{tikzpicture}[node distance = 15mm, auto]
+    \tikzstyle{box} = [rectangle, draw, text centered, rounded corners, minimum width=6mm, minimum height=6mm]
+    \tikzstyle{mon} = [rectangle, draw, text centered, minimum width=25mm, minimum height=6mm, fill=red!10]
+    \tikzstyle{line} = [draw, -latex']
+
+    \node [box, draw=none] (a0) {};
+    \node [box, draw=none, left of=a0] (dummy) {};
+
+    \foreach \word [count=\pos, evaluate=\pos as \i using int(\pos-1)] in {this,is,a,test,text} {
+      \ifthenelse{\isodd{\pos}}{
+        \node [box, fill=beamer@codeblue!70, right of=a\i] (a\pos) {\word};
+      }{
+        \node [box, fill=beamer@centricgreen!70, right of=a\i] (a\pos) {\word};
+      }
+      \only<\pos>{
+        \ifthenelse{\pos = 2 \OR \pos = 3}{
+          \node [mon, below of=a\pos, yshift=-5mm] (b\pos) {Some(1)\ |+| None = Some(1)};
+        }{
+          \ifthenelse{\pos = 1}{
+            \node [mon, below of=a\pos, yshift=-5mm] (b\pos) {None\ |+| Some(1) = Some(1)};
+          }{
+            \ifthenelse{\pos=4}{
+              \node [mon, below of=a\pos, yshift=-5mm] (b\pos) {Some(1)\ |+| Some(1) = Some(2)};
+            }{
+              \node [mon, below of=a\pos, yshift=-5mm] (b\pos) {Some(2)\ |+| Some(1) = Some(3)};
+            }
+          }
+        }
+        \path [line] (b\pos) -- (a\pos);
+      }
+    }
   \end{tikzpicture}
+  \vspace{1cm}
+  \begin{itemize}
+  \item<5> count without stopwords is 3
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Monoid Composition \textemdash{} Option And Stopwords}
+  \begin{itemize}
+  \item just an example, more options:
+    \begin{itemize}
+    \item don't count chars like \texttt{!?,.} etc.\ using Option again
+    \item use \texttt{Future/Task/IO} to get parallelism
+    \item and so much more
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Monoid Composition \textemdash{} Induction}
+  \begin{itemize}
+  \item base instance does not have to be a Monoid
+  \item using \texttt{Option} we can lift any \texttt{Semigroup}
+  \item \texttt{empty} becomes \texttt{None}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}
@@ -351,7 +429,6 @@
 \begin{frame}
   \frametitle{Calculating With Monoids}
   \begin{itemize}
-
   \item adding things (or multiplying)
   \item min and max
   \item map of key to value (for any monoid as value)
@@ -359,30 +436,6 @@
   \item chars is the integer monoid with addition
   \item lines is also the integer monoid, but only count 1 if char is a newline
   \item for words, for now just split the input and count 1 on every ``group''
-  \end{itemize}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Metrics With Monoids}
-  \begin{itemize}
-  \item calculate some metrics like: words, chars, lines
-  \item some metrics cannot be expressed however
-  \end{itemize}
-\end{frame}
-
-\begin{frame}
-  \frametitle{You can nest monoids}
-  \begin{itemize}
-  \item monoids compose naturally
-  \item handy because future of monoid is still a monoid
-  \end{itemize}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Products of Monoids}
-  \begin{itemize}
-  \item a tuple of monoids is still a monoid, that works component wise
-  \item handy for our case study!
   \end{itemize}
 \end{frame}
 
@@ -469,6 +522,25 @@
   \item TODO: semantics of traversing with state
   \item get rid of the leak using IO + Ref (cats-effect)
   \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Overview}
+  \def\firstcircle{(0,0) ellipse (20mm and 5mm)}
+  \def\secondcircle{(0,0) ellipse (25mm and 12mm)}
+  \def\thirdcircle{(0,0) ellipse (35mm and 20mm)}
+  \begin{center}
+    \begin{tikzpicture}
+      \begin{scope}[fill opacity=0.5]
+        \fill[beamer@centricgreen!90] \firstcircle;
+        \fill[beamer@codeblue!90] \secondcircle;
+        \fill[red!5] \thirdcircle;
+        \draw \firstcircle node  {$Semigroup$};
+        \draw \secondcircle node [yshift=-8mm] {$Monoid$};
+        \draw \thirdcircle node [yshift=-16mm] {$Applicative$};
+      \end{scope}
+    \end{tikzpicture}
+  \end{center}
 \end{frame}
 
 \begin{frame}

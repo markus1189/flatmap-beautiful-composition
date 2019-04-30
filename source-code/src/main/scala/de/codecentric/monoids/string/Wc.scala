@@ -1,4 +1,5 @@
-package de.codecentric.monoids.string
+package de.codecentric.monoids
+package string
 
 import cats.instances.int._
 import cats.instances.tuple._
@@ -9,7 +10,7 @@ trait Wc {
   //snippet:wc-monoid-string
   def run(input: Iterator[Char]): (Int, Int, Int) =
     // wordsAndSkipped: Iterator[Char] => Iterator[(Int, String)]
-    runMonoid(step)(Wc.wordsAndSkipped(input))
+    runMonoid(step)(wordsAndSkipped(input))
 
   def runMonoid[M: Monoid](f: (Int, String) => M)(
       input: Iterator[(Int, String)]): M =
@@ -18,30 +19,10 @@ trait Wc {
   def step(skip: Int, w: String): (Int, Int, Int) =
     (countLines(w), countWords(w), countChars(skip, w))
 
-  def countLines(w: String): Int = w.contains("\n") ?? 1
+  def countLines(w: String): Int = 0 // damn...
 
-  def countWords(w: String): Int = 0 // how?
+  def countWords(w: String): Int = 1
 
   def countChars(skip: Int, w: String): Int = skip + w.length
 //end
-}
-
-object Wc extends Wc {
-  def wordsAndSkipped(input: Iterator[Char]): Iterator[(Int, String)] =
-    new Iterator[(Int, String)] {
-      override def hasNext: Boolean = input.hasNext
-
-      override def next(): (Int, String) = {
-        var skipped: Int = 0
-        var current = input.next()
-//        if (input.hasNext) skipped += 1
-
-        while (current.isSpaceChar) {
-          skipped += 1
-          current = input.next()
-        }
-
-        (skipped, current + input.takeWhile(!_.isWhitespace).mkString)
-      }
-    }
 }
