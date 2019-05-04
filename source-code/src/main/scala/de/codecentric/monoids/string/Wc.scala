@@ -4,7 +4,6 @@ package string
 import cats.instances.int._
 import cats.instances.tuple._
 import cats.kernel.Monoid
-import mouse.boolean._
 
 trait Wc {
   //snippet:wc-monoid-string
@@ -26,3 +25,5 @@ trait Wc {
   def countChars(skip: Int, w: String): Int = skip + w.length
 //end
 }
+
+object Wc extends Wc

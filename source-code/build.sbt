@@ -29,10 +29,8 @@ lazy val root = (project in file("."))
     libraryDependencies ++= libs,
     libraryDependencies ++= testLibs,
     testOptions in Test += Tests.Argument(TestFrameworks.ScalaCheck,
-      "-minSuccessfulTests",
-      "200",
-      "-workers",
-      "4")
+                                          "-minSuccessfulTests",
+                                          "200")
   )
 
 // See https://www.scala-sbt.org/1.x/docs/Using-Sonatype.html for instructions on how to publish to Sonatype.

@@ -10,6 +10,9 @@
 % Font configuration
 \usepackage{fontspec}
 
+\usepackage[listings, minted]{tcolorbox}
+\usepackage{smartdiagram}
+
 \input{font.tex}
 
 % Tikz for beautiful drawings
@@ -42,6 +45,13 @@
 \section{Introduction}\label{sec:introduction}
 
 \begin{frame}
+  \frametitle{Compose This}
+  \begin{itemize}
+  \item what is the composition of
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
   \frametitle{Just Imagine}
   \begin{itemize}
   \item a world where your abstractions just fit together
@@ -51,59 +61,74 @@
 \end{frame}
 
 \begin{frame}
-  \frametitle{Beautiful Composition}
+  \frametitle{Beautiful Composition \textemdash{} Themes}
+  {
+    \smartdiagramset{
+      set color list={beamer@centricgreen!80,beamer@codeblue!80,red!50},
+      module minimum width=3cm,
+      text width=2.8cm
+    }
+    \smartdiagram[circular diagram]{
+      Principle of Least Power,
+      Composable Abstractions
+    }
+  }
   \begin{itemize}
   \item Themes in this presentation:
-    \begin{itemize}
-    \item open for extension, closed for modification
-    \item composition, composition, composition
-    \item the principle of least power
-    \end{itemize}
+  \item design: the principle of least power
+  \item important property of an abstraction: composition
   \end{itemize}
 \end{frame}
 
-\begin{frame}
+\begin{frame}[fragile]
   \frametitle{Content}
-  \begin{itemize}
-  \item \hyperref[sec:introduction]{Introduction}
-  \item \hyperref[sec:monoids]{Monoids}
-  \item \hyperref[sec:applicatives]{Applicatives}
-  \item \hyperref[sec:streaming]{Streaming}
-  \item \hyperref[sec:conclusion]{Conclusion}
-  \end{itemize}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Open Closed Principle}
-  \begin{itemize}
-  \item remember the open closed principle?
-  \item open for extension
-  \item closed for modification
-  \item if applied correctly, this means heaven
-  \end{itemize}
+  \begin{center}
+    \resizebox{!}{0.8\textheight}{
+      \smartdiagram[bubble diagram]{
+        Content,
+        2 Monoids,
+        1 Introduction,
+        5 Conclusion,
+        4 Streaming,
+        3 Applicatives
+      }
+    }
+  \end{center}
 \end{frame}
 
 \begin{frame}
   \frametitle{The Principle Of Least Power}
+    \begin{tcolorbox}[
+      fonttitle=\sffamily\bfseries,
+      colbacktitle=black,
+      colframe=black,
+      coltitle=beamer@centricgreen,
+      title=The Principle
+      ]
+      ``\ldots{} picking not the most powerful solution but the least powerful''
+  \end{tcolorbox}
   \begin{itemize}
   \item https://www.w3.org/DesignIssues/Principles.html
+  \item same is valid for abstractions from functional programming
+  \item if you don't need Monad, don't require it
   \end{itemize}
+  \vfill
+  \begin{quote}
+    The reason for this is that the \textbf{less powerful} the language, \textbf{the
+      more} you can do with the \textbf{data} stored\ldots
+  \end{quote}
 \end{frame}
 
 \begin{frame}
   \frametitle{Composition}
   \begin{itemize}
-  \item what is composition
-  \item why it is important
-  \item how to achieve it
-  \end{itemize}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Ways To Compose}
-  \begin{itemize}
-  \item nesting (composition)
-  \item tupling (multiple components in parallel)
+  \item abstractions help to hide details and reason at a higher level
+  \item real power comes when those abstractions compose
+  \item otherwise isolated island you have to throw over board
+  \item most ``classic'' GoF Design Patterns in OO fail to compose
+  \item many ``mathematical'' abstractions in FP compose naturally
+  \item example: inductive monoid, product of monoids (more later)
+  \item leaky abstraction (TODO: include?)
   \end{itemize}
 \end{frame}
 
@@ -114,6 +139,14 @@
   \item collect metrics
   \item single traversal
   \end{itemize}
+
+  \begin{tikzpicture}[node distance = 20mm, auto]
+    \tikzstyle{box} = [rectangle, draw, text centered, rounded corners, minimum width=6mm, minimum height=6mm]
+
+    \node [box, draw=none] (text) {Input Text};
+    \node [box, draw=none, right of=text] (blackbox) {Our Task};
+    \node [box, draw=none, right of=blackbox] (metrics) {Metrics};
+  \end{tikzpicture}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -449,14 +482,26 @@ Some(x) |+| Some(y) === Some(x |+| y)
   \inputminted[fontsize=\footnotesize]{scala}{snippets/wc-monoid-string.scala}
 \end{frame}
 
+\begin{frame}
+  \frametitle{Monoids \textemdash{} Review}
+  \begin{itemize}
+  \item composes very well from small blocks
+  \item easy to extend using custom metrics
+  \item \texttt{Option} can lift any Semigroup
+  \item works beautifully with everything that can be folded
+  \end{itemize}
+\end{frame}
+
 \section{Applicatives}\label{sec:applicatives}
 
-\begin{frame}
+\begin{frame}[fragile]
   \frametitle{From Monoids To Applicatives}
   \begin{itemize}
   \item also called \textbf{Monoidal} Functors
   \item ``monoidal'' in the effects (pure = ``empty'' effect, \texttt{<*>} = ``combine effects'')
   \end{itemize}
+  \vfill
+  \inputminted[fontsize=\small]{scala}{snippets/applicative-def.scala}
 \end{frame}
 
 \begin{frame}
@@ -464,15 +509,23 @@ Some(x) |+| Some(y) === Some(x |+| y)
   \begin{itemize}
   \item but wait a moment, was all we learned about Monoids for nothing?!
   \item rejoice, we can reuse \textbf{everything} we have until now
-  \item as we will see later
+  \item actually two ways
+    \begin{itemize}
+    \item lift Monoid inside Applicative
+    \item promote any Monoid to an Applicative
+    \end{itemize}
   \end{itemize}
 \end{frame}
 
 \begin{frame}
-  \frametitle{Metrics via Applicatives}
+  \frametitle{Monoids Inside Applicatives}
   \begin{itemize}
-  \item using applicatives we have all the power we need
-  \item use State, IO, Task, \ldots
+  \item for every \texttt{F[A]}, given \texttt{Applicative[F]} and \texttt{Monoid[A]}
+  \item we can define
+    \begin{itemize}
+    \item \texttt{empty = pure compose empty} to get \texttt{A => F[A]}
+    \item \texttt{combine = (x,y).map2(combine)} to get \texttt{(F[A],F[A]) => F[A]}
+    \end{itemize}
   \end{itemize}
 \end{frame}
 
@@ -481,7 +534,8 @@ Some(x) |+| Some(y) === Some(x |+| y)
   \begin{itemize}
   \item the functor instance is a little strange
   \item but the applicative instance is super awesome
-  \item allows you to lift any monoid into an applicative
+  \item remember \texttt{Option} lifting any \texttt{Semigroup}?
+  \item allows you to lift any \texttt{Monoid} into an \texttt{Applicative}!
   \item that means we can still use everything we already have
   \item (nb: Const is a monoid isomorphism)
   \end{itemize}
@@ -490,9 +544,10 @@ Some(x) |+| Some(y) === Some(x |+| y)
 \begin{frame}
   \frametitle{Traversing With Applicatives}
   \begin{itemize}
-  \item instead of folding with monoids
-  \item \texttt{traverse} with applicatives
+  \item for monoids, \texttt{foldMap} is the workhorse for all the fun
+  \item for applicatives, switch to \texttt{traverse}
   \end{itemize}
+  TODO: definition of traverse
 \end{frame}
 
 \begin{frame}
@@ -501,6 +556,14 @@ Some(x) |+| Some(y) === Some(x |+| y)
   \item so why not monads
   \item applicatives compose (Nested)
   \item and also work as a product (Tuple2K)
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Metrics via Applicatives}
+  \begin{itemize}
+  \item using applicatives we have all the power we need
+  \item use State, Task, IO, \ldots
   \end{itemize}
 \end{frame}
 
@@ -515,12 +578,20 @@ Some(x) |+| Some(y) === Some(x |+| y)
   \end{itemize}
 \end{frame}
 
-\begin{frame}
+\begin{frame}[fragile]
   \frametitle{State makes everything more complicated}
   \begin{itemize}
   \item but \textbf{State} has severe drawbacks\dots
   \item TODO: semantics of traversing with state
   \item get rid of the leak using IO + Ref (cats-effect)
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Lift Monoids Over Applicatives}
+  \begin{itemize}
+  \item we can also define an inductive Monoid instance for Applicative
+  \item if there is a \texttt{Monoid[A]}, then there also is a \texttt{Monoid[F[A]]} (given \texttt{Applicative[F]})
   \end{itemize}
 \end{frame}
 
@@ -626,6 +697,16 @@ Some(x) |+| Some(y) === Some(x |+| y)
   \item control flow can be easily customized
   \item (Sometimes) Monads are overrated
   \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Abstraction}
+  \smartdiagramset{set color list={beamer@centricgreen!80,beamer@codeblue!80,red!50}}
+  \smartdiagram[priority descriptive diagram]{
+    Semigroup,
+    Monoid,
+    Applicative
+  }
 \end{frame}
 
 \begin{frame}

@@ -1,15 +1,18 @@
 package de.codecentric.shell
 
-import java.nio.file.Path
+import java.io.ByteArrayInputStream
+import java.nio.charset.StandardCharsets
 
 import scala.sys.process._
 
 trait Wc {
+  def run(iter: Iterator[Char]): (Int, Int, Int) = {
+    val is = new ByteArrayInputStream(iter.mkString.getBytes(StandardCharsets.UTF_8))
 
-  def run(path: Path): (Int, Int, Int) = {
-    s"wc $path".!!.split("""\s+""").dropWhile(_.forall(_.isWhitespace)).dropRight(1).map(_.toInt) match {
+    val output = (List("wc") #< is).!!
+    output.split("""\s+""").dropWhile(_.forall(_.isWhitespace)).map(_.toInt) match {
       case Array(nw, nl, nc) => (nw, nl, nc)
-      case r                 => throw new RuntimeException(s"Match error: ${r.toList} for file $path")
+      case r                 => throw new RuntimeException(s"Match error: ${r.toList} for given input. Output:\n$output\n-- end of output --")
     }
   }
 }

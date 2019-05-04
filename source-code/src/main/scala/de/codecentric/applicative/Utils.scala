@@ -23,10 +23,10 @@ object Utils {
       chunk.foldLeft(Applicative[F].pure(()))((acc, x) => acc <* f(x))
   }
 
-  implicit class Fs2StreamOps[A, F[_]](s: fs2.Stream[F, A]) {
-    def traverse_[B](f: A => F[B])(
-        implicit A: Applicative[F]): fs2.Stream[F, F[Unit]] =
-      s.fold(Applicative[F].pure(()))(_ <* f(_))
+  implicit class Fs2StreamOps[A, G[_], F[_]](s: fs2.Stream[F, A]) {
+    def traverse_[B](f: A => G[B])(
+        implicit A: Applicative[G]): fs2.Stream[F, G[Unit]] =
+      s.fold(Applicative[G].pure(()))(_ <* f(_))
   }
 
   def sinkTraverse_[F[_]: Applicative, A](

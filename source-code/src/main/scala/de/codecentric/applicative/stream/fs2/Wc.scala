@@ -5,6 +5,7 @@ import cats.effect.concurrent.Ref
 import cats.effect.{ContextShift, IO}
 import cats.instances.int._
 import de.codecentric.applicative.Utils._
+import fs2.Chunk
 import mouse.boolean._
 
 import scala.concurrent.ExecutionContext
@@ -15,33 +16,22 @@ trait Wc {
     implicit val ioContextShift: ContextShift[IO] =
       IO.contextShift(ExecutionContext.global)
 
-    val x = fs2.Stream
+    val ref = Ref.of[IO, Boolean](false).unsafeRunSync()
+    val Tuple2K(Tuple2K(chars, lines), words) = fs2.Stream
       .fromIterator[IO, Char](input)
-      .split(_ == '\n')
-      .mapAsync(10) { chunk =>
-        val ref = Ref.of[IO, Boolean](false).unsafeRunSync
-        IO {
-          chunk.traverse_(
-            c =>
-              Tuple2K(Tuple2K(countChars[Unit](c), countLines[Unit](c)),
-                      countWords[Unit](ref)(c)))
-        }
-      }
+      .changesBy()
+      .traverse_(c =>
+          Tuple2K(Tuple2K(countChars[Unit](c), countLines[Unit](c)), countWords[Unit](ref)(c)))
+      .compile.lastOrError.unsafeRunSync()
 
+    (lines.getConst, words.value.unsafeRunSync().getConst, chars.getConst)
+  }
 
-//    x.tra
-//
-//    x.traverse_(x => identity(x))
-//
-//    val y = x.traverse_(identity)
-    //    val src = Source.fromIterator(() => input)
-//
-//    val r = src
-//      .toMat(sink(ExecutionContext.global))(Keep.right)
-//      .run()(materializer)
-//    Await.result(r, Duration.Inf)
-
-    ???
+  private[this] def runChunk(ref: Ref[IO, Boolean])(chunk: Chunk[Char]) = {
+    chunk.traverse_ { c =>
+      Tuple2K(Tuple2K(countChars[Unit](c), countLines[Unit](c)),
+              countWords[Unit](ref)(c))
+    }
   }
 
   private[this] def countChars[A](c: Char): Const[Int, A] = Const.of(1)
@@ -58,3 +48,5 @@ trait Wc {
   }
 
 }
+
+object Wc extends Wc

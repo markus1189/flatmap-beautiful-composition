@@ -44,6 +44,7 @@ let
     ocgx2
     pgf
     scheme-medium
+    smartdiagram
     tcolorbox
     textpos
     todonotes

@@ -8,6 +8,7 @@ import cats.instances.int._
 import cats.instances.tuple._
 import cats.syntax.eq._
 import de.codecentric.applicative.stream.akka.Wc
+import de.codecentric.applicative.stream.fs2
 import org.scalacheck.Prop.BooleanOperators
 import org.scalacheck.{Prop, Properties}
 
@@ -21,30 +22,31 @@ class WcProps extends Properties("WordCount") {
   propertyWithSeed("applicative-io vs shell", None) =
     wordCountProp("applicative-io")(applicative.io.Wc.run)
 
-  propertyWithSeed("applicative-io-stream vs shell", None) = {
+  propertyWithSeed("applicative-io-stream vs applicative", None) = {
     implicit val system: ActorSystem = ActorSystem()
     val mat: ActorMaterializer = ActorMaterializer()
 
-    val wc = new Wc {
-      override def materializer: ActorMaterializer = mat
-    }
+    Prop.forAll(WcGen.text) { text =>
+      val applic = applicative.io.Wc.run(text.iterator)
+      val stream = new applicative.stream.akka.Wc {
+        override def materializer: ActorMaterializer = mat
+      }.run(text.iterator)
 
-      wordCountProp("applicative-io-stream")(wc.run)
+      val result = s"$stream === fs2 stream" |: s"$applic === applicative-io" |: applic == stream
+
+      result
     }
+  }
 
   private[this] def wordCountProp(propName: String)(
       run: Iterator[Char] => (Int, Int, Int)): Prop =
     Prop.forAll(WcGen.text) { text =>
-      val file: File = writeFile(text)
-
       val expected =
-        de.codecentric.shell.Wc.run(file.toPath.toAbsolutePath)
+        de.codecentric.shell.Wc.run(text.iterator)
 
       val actual = run(text.iterator)
 
       val result = s"$expected === expected" |: s"$actual === $propName" |: actual === expected
-
-      file.delete() // DON'T delete on exception
 
       result
     }
