@@ -96,7 +96,7 @@ rules projectCompiler = do
                                    ,"beamerouterthemecodecentric.sty"
                                    ,"beamerthemecodecentric.sty"
                                    ]
-    need (inp : (buildDir </> "mindmap.tex") : (buildDir </> "font.tex") : theme)
+    need (inp : (buildDir </> "font.tex") : theme)
     latexmk inp
 
   buildDir </> "font.tex" %> \_ -> dumpFontFile

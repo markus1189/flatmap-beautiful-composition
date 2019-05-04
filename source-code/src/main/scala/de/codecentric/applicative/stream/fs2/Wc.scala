@@ -19,7 +19,6 @@ trait Wc {
     val ref = Ref.of[IO, Boolean](false).unsafeRunSync()
     val Tuple2K(Tuple2K(chars, lines), words) = fs2.Stream
       .fromIterator[IO, Char](input)
-      .changesBy()
       .traverse_(c =>
           Tuple2K(Tuple2K(countChars[Unit](c), countLines[Unit](c)), countWords[Unit](ref)(c)))
       .compile.lastOrError.unsafeRunSync()
