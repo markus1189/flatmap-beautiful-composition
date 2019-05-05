@@ -12,6 +12,7 @@
 
 \usepackage[listings, minted]{tcolorbox}
 \usepackage{smartdiagram}
+\usepackage[export]{adjustbox}
 
 \input{font.tex}
 
@@ -22,7 +23,7 @@
 
 % Minted configuration for source code highlighting
 \usepackage{minted}
-\setminted{highlightcolor=black!5, linenos}
+\setminted{highlightcolor=orange!50, linenos}
 \setminted{style=lovelace}
 
 \usepackage[listings, minted]{tcolorbox}
@@ -30,6 +31,10 @@
 
 % Use the include theme
 \usetheme{codecentric}
+
+\newcommand{\emoji}[1]{
+  \includegraphics[width=6mm, valign=c]{static-images/#1.png}
+}
 
 % Metadata
 \title{Beautiful Composition}
@@ -490,6 +495,8 @@ Some(x) |+| Some(y) === Some(x |+| y)
   \item \texttt{Option} can lift any Semigroup
   \item works beautifully with everything that can be folded
   \end{itemize}
+  \vspace{1cm}
+  \inputminted[fontsize=\small]{scala}{snippets/foldable-def.scala}
 \end{frame}
 
 \section{Applicatives}\label{sec:applicatives}
@@ -504,16 +511,24 @@ Some(x) |+| Some(y) === Some(x |+| y)
   \inputminted[fontsize=\small]{scala}{snippets/applicative-def.scala}
 \end{frame}
 
-\begin{frame}
+\begin{frame}[fragile]
   \frametitle{Applicative as Effect Monoids}
   \begin{itemize}
-  \item example for Monoidal in effect:
+  \item \texttt{Applicatives} adds richer structure, \textbf{monoidal} in effects
+  \item \texttt{pure} is like \texttt{empty} \textit{for effects}
+  \item \texttt{product}\footnote{from Semigroupal} is like \texttt{combine} \textit{for effects}
   \end{itemize}
+  \begin{minted}{scala}
+    def empty      : F
+    def pure(x: A) : F[A]
 
+    def combine( x: F,     y: F)   : F
+    def product(fa: F[A], fb: F[B]): F[A]
+  \end{minted}
 \end{frame}
 
 \begin{frame}
-  \frametitle{No Monoids?}
+  \frametitle{No Monoids? \emoji{scream}}
   \begin{itemize}
   \item but wait a moment, was all we learned about Monoids for nothing?!
   \item rejoice, we can reuse \textbf{everything} we have until now
@@ -525,20 +540,50 @@ Some(x) |+| Some(y) === Some(x |+| y)
   \end{itemize}
 \end{frame}
 
-\begin{frame}
+\begin{frame}[fragile]
   \frametitle{Monoids Inside Applicatives}
   \begin{itemize}
   \item for every \texttt{F[A]}, given \texttt{Applicative[F]} and \texttt{Monoid[A]}
   \item we can define
-    \begin{itemize}
-    \item \texttt{empty = pure compose empty} to get \texttt{A => F[A]}
-    \item \texttt{combine = (x,y).map2(combine)} to get \texttt{(F[A],F[A]) => F[A]}
-    \end{itemize}
+  \end{itemize}
+
+  \begin{minted}{scala}
+    def empty: F[A] = pure(Monoid[A].empty)
+
+    def combine(x: F[A], y: F[A]): F[A] =
+      Applicative[F].map2(x, y)(Monoid[A].combine)
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{The Const Datatype}
+  \begin{center}
+    \inputminted[fontsize=\small]{scala}{snippets/const-def.scala}
+  \end{center}
+  \vspace{1cm}
+  \begin{itemize}
+  \item simple case class with phantom type parameter
+  \item \ldots{} and one actual value
+  \item let's define \texttt{Functor} and \texttt{Applicative}
   \end{itemize}
 \end{frame}
 
+\begin{frame}[fragile]
+  \frametitle{The Const Datatype}
+  \begin{center}
+    \inputminted[fontsize=\small]{scala}{snippets/const-try-applicative.scala}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{The Const Datatype}
+  \begin{center}
+    \inputminted[fontsize=\small, highlightlines={1,8,12}]{scala}{snippets/const-applicative.scala}
+  \end{center}
+\end{frame}
+
 \begin{frame}
-  \frametitle{The Const Functor}
+  \frametitle{The Const Datatype}
   \begin{itemize}
   \item the functor instance is a little strange
   \item but the applicative instance is super awesome
@@ -550,21 +595,38 @@ Some(x) |+| Some(y) === Some(x |+| y)
 \end{frame}
 
 \begin{frame}
-  \frametitle{Traversing With Applicatives}
+  \frametitle{Composition And Applicatives}
   \begin{itemize}
-  \item for monoids, \texttt{foldMap} is the workhorse for all the fun
-  \item for applicatives, switch to \texttt{traverse}
+  \item remember \texttt{Monoid} composition? Nesting and tupling
+  \item we get the same for \texttt{Applicative} (from e.g.\ \texttt{cats})
+    \begin{itemize}
+    \item Nested
+    \item Tuple2K
+    \end{itemize}
+  \item why is that a big deal again?
   \end{itemize}
-  TODO: definition of traverse
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Composition And Applicatives}
+  \inputminted[fontsize=\small]{scala}{snippets/compose-applicative-monoid.scala}
+  \inputminted[fontsize=\small]{scala}{snippets/compose-applicative-1.scala}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Composition And Applicatives}
+  \inputminted[fontsize=\small]{scala}{snippets/compose-applicative-2.scala}
 \end{frame}
 
 \begin{frame}
-  \frametitle{Composing Applicatives}
+  \frametitle{Traversing With Applicatives}
   \begin{itemize}
-  \item so why not monads
-  \item applicatives compose (Nested)
-  \item and also work as a product (Tuple2K)
+  \item for monoids, \texttt{foldMap} is the essential operation
+  \item for applicatives, change to \texttt{traverse}
+  \item we can derive \texttt{foldMap} from \texttt{traverse}
   \end{itemize}
+  \vspace{1cm}
+  \inputminted[fontsize=\small]{scala}{snippets/traverse-def.scala}
 \end{frame}
 
 \begin{frame}
@@ -587,20 +649,8 @@ Some(x) |+| Some(y) === Some(x |+| y)
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{State makes everything more complicated}
-  \begin{itemize}
-  \item but \textbf{State} has severe drawbacks\dots
-  \item TODO: semantics of traversing with state
-  \item get rid of the leak using IO + Ref (cats-effect)
-  \end{itemize}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Lift Monoids Over Applicatives}
-  \begin{itemize}
-  \item we can also define an inductive Monoid instance for Applicative
-  \item if there is a \texttt{Monoid[A]}, then there also is a \texttt{Monoid[F[A]]} (given \texttt{Applicative[F]})
-  \end{itemize}
+  \frametitle{Counting Words \textemdash{} With State}
+  \inputminted[fontsize=\small]{scala}{snippets/count-words-state.scala}
 \end{frame}
 
 \begin{frame}
@@ -623,10 +673,17 @@ Some(x) |+| Some(y) === Some(x |+| y)
 \end{frame}
 
 \begin{frame}
-  \frametitle{Using Foldable and Traverse}
+  \frametitle{Monads Must Be Great!}
   \begin{itemize}
-  \item we can use Foldable and Traverse to abstract over the data structure
-  \item both can also be composed in turn!
+  \item if \texttt{Applicative} brings us so much power, how good must it be with \texttt{Monad}
+  \item unfortunately, \texttt{Monad}s are not as good as they seem
+  \item \texttt{Functor} and \texttt{Applicative} are \textbf{closed} under composition
+  \item arbitrary nesting of \texttt{Functor} inside \texttt{Functor}
+    / or \texttt{Applicative} inside \texttt{Applicative}
+  \item \texttt{Monad} is \textbf{not} closed, not guaranteed to be a \texttt{Monad} at all!
+  \item and Product (Tuple) does not work either
+  \item \texttt{Monad}s are absolutely overrated
+  \item see ``The Essence Of The Iterator Pattern'', section 5.4
   \end{itemize}
 \end{frame}
 
@@ -636,9 +693,9 @@ Some(x) |+| Some(y) === Some(x |+| y)
   \frametitle{Okay but traversing Lists/Iterators/etc is suboptimal!}
   \begin{itemize}
   \item but there is no \texttt{traverse} for real streams?!
-  \item because there can't be one\ldots
-  \item but: do we need the actual \texttt{traverse}?
-  \item realization: \texttt{traverse\_} is enough!
+  \item because there can't be one\ldots (why?)
+  \item but: do we need the actual \texttt{traverse}
+  \item realization: \texttt{traverse\_} (\texttt{Foldable}) is enough!
   \end{itemize}
 \end{frame}
 
@@ -648,51 +705,39 @@ Some(x) |+| Some(y) === Some(x |+| y)
   \item so what's the difference between \texttt{traverse} and \texttt{traverse\_}
   \item the regular \texttt{traverse} keeps the whole structure!
   \item the \texttt{traverse\_} variant only secquences effects!
-  \item and again: Applicative effect sequencing is associative (parallel!)
+  \item important: Applicative effect sequencing is \textbf{associative} as per the laws
+  \item that means we can work on the stream in parallel
   \end{itemize}
 \end{frame}
 
-\begin{frame}
-  \frametitle{Traversing with State}
+\begin{frame}[fragile]
+  \frametitle{Implement traverse\_ for fs2}
   \begin{itemize}
-  \item using State, we can still iterate imperatively
-  \item but we can keep keep the parts separate and \textbf{compose} them!
-  \item all the power from the normal imperative approach with all the benefits
+  \item our framework needs the \texttt{traverse\_}
+  \item can be implemented for anything that has a proper \texttt{fold}
+  \item let's do it for fs2 \texttt{Stream}
   \end{itemize}
+  \vspace{1cm}
+  \inputminted[fontsize=\small]{scala}{snippets/fs2-traverse-stream.scala}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Counting Words With fs2}
+  \begin{itemize}
+  \item example uses fs2 (also possible: akka-streams)
+  \end{itemize}
+  \vspace{1cm}
+  \inputminted[fontsize=\small]{scala}{snippets/fs2-count-words.scala}
 \end{frame}
 
 \begin{frame}
-  \frametitle{Traversing Streams}
+  \frametitle{Counting Words With Streams}
   \begin{itemize}
-  \item calculate length as well as do something
-  \item log element and also write to db
-  \item keep concerns separate and isolated
-  \end{itemize}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Composition}
-  \begin{itemize}
-  \item use \texttt{Nested} to nest applicatives for ultimate power
-  \item separate state update and retrieval + counting
-  \item important gotcha: no real streaming depending on the applicative! (state...)
-  \end{itemize}
-\end{frame}
-
-\begin{frame}
-  \frametitle{The Tradeoffs}
-  \begin{itemize}
-  \item streaming is not possible with this approach, but only an example
-  \item abstractions like Monoid and Applicative compose nicely
-  \end{itemize}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Monadic composition?}
-  \begin{itemize}
-  \item monadic composition is not nearly as nice
-  \item needs commutative monads
-  \item see essence iterator 5.4
+  \item suddenly we can use all the stream processing goodness
+  \item we could chunk the input and process in parallel (but keep order)
+  \item by carefully choosing the \texttt{Applicative}, operate with constant memory
+  \item use existing connectors to read from DB, Kafka, etc.
+  \item very flexible and almost for free!
   \end{itemize}
 \end{frame}
 
@@ -703,7 +748,7 @@ Some(x) |+| Some(y) === Some(x |+| y)
   \begin{itemize}
   \item we can add metrics easily
   \item control flow can be easily customized
-  \item (Sometimes) Monads are overrated
+  \item (sometimes) Monads are overrated
   \end{itemize}
 \end{frame}
 

@@ -20,11 +20,13 @@ let
   );
   latexPackages = texlive.combine {
     inherit (texlive)
+    adjustbox
     animate
     babel
     beamer
     chngcntr
     cleveref
+    collectbox
     enumitem
     environ
     etoolbox

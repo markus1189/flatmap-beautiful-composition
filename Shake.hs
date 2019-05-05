@@ -8,7 +8,7 @@
 module Main where
 
 import           Control.Monad (unless)
-import           Data.List (intercalate, isPrefixOf)
+import           Data.List (intercalate, isPrefixOf, isInfixOf, dropWhileEnd)
 import           Data.List.Split (chunksOf)
 import           Data.Maybe (mapMaybe)
 import           Data.Monoid ((<>))
@@ -74,7 +74,7 @@ addOracles = do
                                                   ,"--no-stderr"
                                                   ,"--stdout"
                                                   ,"--config-str"
-                                                  ,"maxColumn = 70"
+                                                  ,"maxColumn = 85"
                                                   ]
   _ <- addOracle $ \(DitaaOptions _) -> return ["--scale"
                                                ,"3"
@@ -157,10 +157,10 @@ scalafmt inp = do
   opts <- askOracle (ScalafmtOptions ())
   contents <- liftIO (IO.readFile inp)
   withTempFile $ \temp -> do
-    let wrapped = unlines $ "object ObjForScalafmt {" : lines contents ++ ["}"]
+    let wrapped = unlines $ "object ObjForScalafmt {" : lines contents ++ ["} //scalafmtmarker"]
     liftIO $ IO.writeFile temp wrapped
     Stdout stdout <- cmd [EchoStdout False, EchoStderr False] bin (opts ++ [temp])
-    let output = unlines (init (drop 1 (lines stdout)))
+    let output = unlines (dropWhileEnd ("scalafmtmarker" `isInfixOf`) (init (drop 1 (lines stdout))))
     liftIO $ IO.writeFile inp output
   where bin = "scalafmt" :: String
 
@@ -189,7 +189,9 @@ commandDeps cmds file = do
                    concatMap snd .
                    matchCommand (`elem` cmds) $
                    t
-      return result
+      return $ if (any ("#" `isInfixOf`) result)
+                 then []
+                 else result
 
 graphicDeps :: FilePath -> Action [FilePath]
 graphicDeps file = map (buildDir </>) <$> commandDeps ["includegraphics"] file

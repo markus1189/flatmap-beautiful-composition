@@ -11,17 +11,22 @@ import mouse.boolean._
 import scala.concurrent.ExecutionContext
 
 trait Wc {
+  implicit val ioContextShift: ContextShift[IO] =
+    IO.contextShift(ExecutionContext.global) // don't do this in production
 
   def run(input: Iterator[Char]): (Int, Int, Int) = {
-    implicit val ioContextShift: ContextShift[IO] =
-      IO.contextShift(ExecutionContext.global)
-
     val ref = Ref.of[IO, Boolean](false).unsafeRunSync()
-    val Tuple2K(Tuple2K(chars, lines), words) = fs2.Stream
-      .fromIterator[IO, Char](input)
-      .traverse_(c =>
-          Tuple2K(Tuple2K(countChars[Unit](c), countLines[Unit](c)), countWords[Unit](ref)(c)))
-      .compile.lastOrError.unsafeRunSync()
+    val Tuple2K(Tuple2K(chars, lines), words) =
+      //snippet:fs2-count-words
+      fs2.Stream
+        .fromIterator[IO, Char](input)
+        .traverse_(c =>
+          Tuple2K(Tuple2K(countChars[Unit](c), countLines[Unit](c)),
+                  countWords[Unit](ref)(c)))
+        .compile
+        .lastOrError
+        .unsafeRunSync()
+    //end
 
     (lines.getConst, words.value.unsafeRunSync().getConst, chars.getConst)
   }
