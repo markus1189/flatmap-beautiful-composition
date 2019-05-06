@@ -189,9 +189,9 @@ commandDeps cmds file = do
                    concatMap snd .
                    matchCommand (`elem` cmds) $
                    t
-      return $ if (any ("#" `isInfixOf`) result)
-                 then []
-                 else result
+      let filtered = filter (not . ("#" `isInfixOf`)) result
+      putQuiet ("Discovered latex dependencies for '" <> file <> "': " <> show filtered)
+      return $ filtered
 
 graphicDeps :: FilePath -> Action [FilePath]
 graphicDeps file = map (buildDir </>) <$> commandDeps ["includegraphics"] file
@@ -199,7 +199,7 @@ graphicDeps file = map (buildDir </>) <$> commandDeps ["includegraphics"] file
 codeDeps :: FilePath -> Action [FilePath]
 codeDeps file = do
   deps <- map (buildDir </>) . filter (not . (`elem` ["scala", "yaml"])) <$> commandDeps ["inputminted"] file
-  putQuiet ("Discovered dependencies for '" <> file <> "': " <> show deps)
+  putQuiet ("Discovered code dependencies for '" <> file <> "': " <> show deps)
   return deps
 
 extractSnippet :: FilePath -> Action String

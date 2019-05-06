@@ -32,10 +32,6 @@
 % Use the include theme
 \usetheme{codecentric}
 
-\newcommand{\emoji}[1]{
-  \includegraphics[width=6mm, valign=c]{static-images/#1.png}
-}
-
 % Metadata
 \title{Beautiful Composition}
 \author{Markus Hauck}
@@ -50,34 +46,53 @@
 \section{Introduction}\label{sec:introduction}
 
 \begin{frame}
-  \frametitle{Compose This}
+  \frametitle{Composition}
   \begin{itemize}
-  \item what is the composition of
+  \item most ``patterns'' in OO don't compose well
+  \item definitely not: Design Patterns
+  \item \texttt{SimpleBeanFactoryAwareAspectInstanceFactory}
+  \item luckily, concepts in FP compose naturally
+  \item see it in this talk
   \end{itemize}
+  \vfill
+  \url{https://github.com/markus1189/flatmap-beautiful-composition}
 \end{frame}
 
-\begin{frame}
-  \frametitle{Just Imagine}
-  \begin{itemize}
-  \item a world where your abstractions just fit together
-  \item like lego blocks
-  \item combinations everywhere
-  \end{itemize}
+\begin{frame}[fragile]
+  \frametitle{The Paper}
+  \begin{columns}
+    \begin{column}{0.4\textwidth}
+      \begin{center}
+        \small
+        Gibbons, Jeremy, and Bruno C. D. S. Oliveira. "The essence of
+        the iterator pattern." Journal of functional programming 19.3-4
+        (2009): 377-402.
+      \end{center}
+
+    \end{column}
+    \begin{column}{0.7\textwidth}
+      \begin{center}
+        \includegraphics[height=0.8\textheight, valign=c]{static-images/eip.png}
+      \end{center}
+    \end{column}
+  \end{columns}
 \end{frame}
 
 \begin{frame}
   \frametitle{Beautiful Composition \textemdash{} Themes}
-  {
-    \smartdiagramset{
-      set color list={beamer@centricgreen!80,beamer@codeblue!80,red!50},
-      module minimum width=3cm,
-      text width=2.8cm
+  \begin{center}
+    {
+      \smartdiagramset{
+        set color list={beamer@centricgreen!80,beamer@codeblue!80,red!50},
+        module minimum width=3cm,
+        text width=2.8cm
+      }
+      \smartdiagram[circular diagram]{
+        Principle of Least Power,
+        Composable Abstractions
+      }
     }
-    \smartdiagram[circular diagram]{
-      Principle of Least Power,
-      Composable Abstractions
-    }
-  }
+  \end{center}
   \begin{itemize}
   \item Themes in this presentation:
   \item design: the principle of least power
@@ -116,6 +131,7 @@
   \item https://www.w3.org/DesignIssues/Principles.html
   \item same is valid for abstractions from functional programming
   \item if you don't need Monad, don't require it
+  \item \texttt{Applicative} vs \texttt{Functor}, \texttt{Monoid} vs \texttt{Semigroup}, etc.
   \end{itemize}
   \vfill
   \begin{quote}
@@ -132,31 +148,53 @@
   \item otherwise isolated island you have to throw over board
   \item most ``classic'' GoF Design Patterns in OO fail to compose
   \item many ``mathematical'' abstractions in FP compose naturally
-  \item example: inductive monoid, product of monoids (more later)
-  \item leaky abstraction (TODO: include?)
+  \item example: inductive monoid, product of monoids (same for Applicatives, more later)
   \end{itemize}
 \end{frame}
 
-\begin{frame}
+\begin{frame}[fragile]
   \frametitle{The Case Study}
   \begin{itemize}
   \item we want to analyze text
   \item collect metrics
   \item single traversal
+  \item in essence a simple version of the GNU \texttt{wc} commandline tool
   \end{itemize}
+  \begin{minted}{sh}
+    bash> wc moby-dick.txt
+    21206  208425 1193382 moby-dick.txt
+  \end{minted}
+  \begin{itemize}
+  \item lines, words, chars of a text
+  \end{itemize}
+\end{frame}
 
-  \begin{tikzpicture}[node distance = 20mm, auto]
-    \tikzstyle{box} = [rectangle, draw, text centered, rounded corners, minimum width=6mm, minimum height=6mm]
-
-    \node [box, draw=none] (text) {Input Text};
-    \node [box, draw=none, right of=text] (blackbox) {Our Task};
-    \node [box, draw=none, right of=blackbox] (metrics) {Metrics};
-  \end{tikzpicture}
+\begin{frame}
+  \frametitle{Not For The Faint Of Heart}
+  \begin{center}
+    \includegraphics{static-images/warning.png}
+    \includegraphics{static-images/see-no-evil.png}
+    \includegraphics{static-images/hear-no-evil.png}
+    \includegraphics{static-images/warning.png}
+  \end{center}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{A First Solution}
   \inputminted[fontsize=\small]{scala}{snippets/imperative-wc.scala}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Problems}
+  \begin{itemize}
+  \item hard to understand
+  \item mixed logic of the three metrics, not isolated
+  \item what if we want to run only certain metrics? (e.g., only words)
+  \item hard to change
+  \item hardcoded control flow of char-by-char iteration
+  \item almost no abstraction at all
+  \item rest of this presentation: how can we do better?
+  \end{itemize}
 \end{frame}
 
 \begin{frame}
@@ -172,8 +210,17 @@
 \section{Monoids}\label{sec:monoids}
 
 \begin{frame}
+  \frametitle{Monoids}
+  \huge
+  Monoids
+\end{frame}
+
+\begin{frame}
   \frametitle{Let's Get Our FP Tools!}
-  % image of toolset?
+  \begin{center}
+    \includegraphics{static-images/toolbox.png}
+    \includegraphics{static-images/construction-worker.png}
+  \end{center}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -181,6 +228,7 @@
   \begin{itemize}
   \item Quick Recap: Monoids
   \item binary method \texttt{combine} and nullary method \texttt{combine}
+    \vspace{1cm}
     \begin{minted}{scala}
       trait Monoid[A] {
         def combine(x: A, y: A): A
@@ -293,12 +341,21 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}
+\begin{frame}[fragile]
   \frametitle{Monoid Composition \textemdash{} Induction}
   \begin{itemize}
   \item some Monoids are based inductively on others
   \item Option, Future, IO, Task, \ldots{}
+  \item the Option-Monoid works like this:
   \end{itemize}
+  \begin{center}
+    \vspace{1cm}
+    \begin{minted}{scala}
+      None |+| y === y
+      x |+| None === x
+      Some(x) |+| Some(y) === Some(x |+| y)
+    \end{minted}
+  \end{center}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -306,29 +363,8 @@
   \begin{itemize}
   \item as an example: filter out (don't count) stopwords
   \item stopwords = most common words that are not interesting (``the'', ``a'', \ldots{})
-  \item the Option-Monoid works like this:
-  \end{itemize}
-  \begin{center}
-  \begin{minted}{scala}
-None |+| y === y
-x |+| None === x
-Some(x) |+| Some(y) === Some(x |+| y)
-  \end{minted}
-\end{center}
-\end{frame}
-
-\begin{frame}[fragile]
-  \frametitle{Monoid Composition \textemdash{} Option And Stopwords}
-  \begin{itemize}
   \item idea: if it is a stopword, use None, otherwise regular count with Some
   \end{itemize}
-  \begin{center}
-  \begin{minted}{scala}
-None |+| y === y
-x |+| None === x
-Some(x) |+| Some(y) === Some(x |+| y)
-  \end{minted}
-\end{center}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -393,6 +429,7 @@ Some(x) |+| Some(y) === Some(x |+| y)
   \item base instance does not have to be a Monoid
   \item using \texttt{Option} we can lift any \texttt{Semigroup}
   \item \texttt{empty} becomes \texttt{None}
+  \item useful for e.g. \texttt{Max} and \texttt{Min} to represent lower/upper bound
   \end{itemize}
 \end{frame}
 
@@ -477,14 +514,16 @@ Some(x) |+| Some(y) === Some(x |+| y)
   \end{itemize}
 \end{frame}
 
-\begin{frame}
+\begin{frame}[fragile]
   \frametitle{Wordcount (Monoids, Chars)}
-  \inputminted[fontsize=\footnotesize]{scala}{snippets/wc-monoid-char.scala}
+  \only<1>{\inputminted[fontsize=\footnotesize]{scala}{snippets/wc-monoid-char.scala}}
+  \only<2>{\inputminted[highlightlines={11}, fontsize=\footnotesize]{scala}{snippets/wc-monoid-char.scala}}
 \end{frame}
 
-\begin{frame}
+\begin{frame}[fragile]
   \frametitle{Wordcount (Monoids, Strings)}
-  \inputminted[fontsize=\footnotesize]{scala}{snippets/wc-monoid-string.scala}
+  \only<1>{\inputminted[highlightlines={13}, fontsize=\footnotesize]{scala}{snippets/wc-monoid-string.scala}}
+  \only<2>{\inputminted[fontsize=\footnotesize]{scala}{snippets/wc-monoid-string.scala}}
 \end{frame}
 
 \begin{frame}
@@ -500,6 +539,12 @@ Some(x) |+| Some(y) === Some(x |+| y)
 \end{frame}
 
 \section{Applicatives}\label{sec:applicatives}
+
+\begin{frame}
+  \frametitle{Applicative}
+  \huge
+  Applicatives
+\end{frame}
 
 \begin{frame}[fragile]
   \frametitle{From Monoids To Applicatives}
@@ -528,7 +573,7 @@ Some(x) |+| Some(y) === Some(x |+| y)
 \end{frame}
 
 \begin{frame}
-  \frametitle{No Monoids? \emoji{scream}}
+  \frametitle{No Monoids? \includegraphics[width=6mm, valign=c]{static-images/scream.png}}
   \begin{itemize}
   \item but wait a moment, was all we learned about Monoids for nothing?!
   \item rejoice, we can reuse \textbf{everything} we have until now
@@ -771,6 +816,8 @@ Some(x) |+| Some(y) === Some(x |+| y)
   \item \hyperref[sec:streaming]{Streaming}
   \item \hyperref[sec:conclusion]{Conclusion}
   \end{itemize}
+  \vfill
+  \url{https://github.com/markus1189/flatmap-beautiful-composition}
 \end{frame}
 
 \appendix{}
