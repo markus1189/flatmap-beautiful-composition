@@ -34,7 +34,7 @@
 
 % Metadata
 \title{Beautiful Composition}
-\author{Markus Hauck}
+\author{Markus Hauck (@markus1189)}
 
 % The presentation content
 \begin{document}
@@ -46,13 +46,20 @@
 \section{Introduction}\label{sec:introduction}
 
 \begin{frame}
+  \begin{center}
+    {\Huge Composition\\}
+    (how to do more with less)
+  \end{center}
+\end{frame}
+
+\begin{frame}
   \frametitle{Composition}
   \begin{itemize}
   \item most ``patterns'' in OO don't compose well
   \item definitely not: Design Patterns
   \item \texttt{SimpleBeanFactoryAwareAspectInstanceFactory}
-  \item luckily, concepts in FP compose naturally
-  \item see it in this talk
+  \item luckily, many concepts in FP compose naturally
+  \item powerful building blocks (feels like LEGO)
   \end{itemize}
   \vfill
   \url{https://github.com/markus1189/flatmap-beautiful-composition}
@@ -78,28 +85,6 @@
   \end{columns}
 \end{frame}
 
-\begin{frame}
-  \frametitle{Beautiful Composition \textemdash{} Themes}
-  \begin{center}
-    {
-      \smartdiagramset{
-        set color list={beamer@centricgreen!80,beamer@codeblue!80,red!50},
-        module minimum width=3cm,
-        text width=2.8cm
-      }
-      \smartdiagram[circular diagram]{
-        Principle of Least Power,
-        Composable Abstractions
-      }
-    }
-  \end{center}
-  \begin{itemize}
-  \item Themes in this presentation:
-  \item design: the principle of least power
-  \item important property of an abstraction: composition
-  \end{itemize}
-\end{frame}
-
 \begin{frame}[fragile]
   \frametitle{Content}
   \begin{center}
@@ -117,6 +102,48 @@
 \end{frame}
 
 \begin{frame}
+  \frametitle{Beautiful Composition \textemdash{} Themes}
+  \begin{center}
+    {
+      \smartdiagramset{
+        set color list={beamer@centricgreen!80,beamer@codeblue!80,red!50},
+        module minimum width=3cm,
+        text width=2.8cm
+      }
+      \smartdiagram[circular diagram]{
+        Principle of Least Power,
+        Composable Abstractions
+      }
+    }
+  \end{center}
+  \begin{itemize}
+  \item design: the principle of least power
+  \item important property of an abstraction: composition
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{The Principle Of Least Power}
+  \begin{itemize}
+  \item something I notice often
+  \end{itemize}
+  \begin{tcolorbox}[
+    fonttitle=\sffamily\bfseries,
+    colbacktitle=black,
+    colframe=black,
+    coltitle=beamer@centricgreen,
+    title=A Programmer
+    ]
+    ``I just use flatMap and be done with it''
+  \end{tcolorbox}
+  \begin{itemize}
+  \item but: there are benefits of using sth with less power
+  \item parallel execution with \texttt{Applicatives}
+  \item less power equals more possibilities (Either vs. Validated)
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
   \frametitle{The Principle Of Least Power}
     \begin{tcolorbox}[
       fonttitle=\sffamily\bfseries,
@@ -128,7 +155,7 @@
       ``\ldots{} picking not the most powerful solution but the least powerful''
   \end{tcolorbox}
   \begin{itemize}
-  \item https://www.w3.org/DesignIssues/Principles.html
+  \item \url{https://www.w3.org/DesignIssues/Principles.html}
   \item same is valid for abstractions from functional programming
   \item if you don't need Monad, don't require it
   \item \texttt{Applicative} vs \texttt{Functor}, \texttt{Monoid} vs \texttt{Semigroup}, etc.
@@ -144,11 +171,10 @@
   \frametitle{Composition}
   \begin{itemize}
   \item abstractions help to hide details and reason at a higher level
-  \item real power comes when those abstractions compose
-  \item otherwise isolated island you have to throw over board
+  \item real power comes when those abstractions compose (otherwise throwaway islands)
   \item most ``classic'' GoF Design Patterns in OO fail to compose
   \item many ``mathematical'' abstractions in FP compose naturally
-  \item example: inductive monoid, product of monoids (same for Applicatives, more later)
+  \item example: inductive monoid, product of monoids (same for Applicatives, \ldots{})
   \end{itemize}
 \end{frame}
 
@@ -165,7 +191,7 @@
     21206  208425 1193382 moby-dick.txt
   \end{minted}
   \begin{itemize}
-  \item lines, words, chars of a text
+  \item \texttt{lines}, \texttt{words} and \texttt{chars}
   \end{itemize}
 \end{frame}
 
@@ -177,6 +203,10 @@
     \includegraphics{static-images/hear-no-evil.png}
     \includegraphics{static-images/warning.png}
   \end{center}
+  \vfill
+
+  Gibbons, Jeremy, and Bruno C. D. S. Oliveira. ``The essence of the
+  iterator pattern.''
 \end{frame}
 
 \begin{frame}[fragile]
@@ -188,12 +218,12 @@
   \frametitle{Problems}
   \begin{itemize}
   \item hard to understand
-  \item mixed logic of the three metrics, not isolated
-  \item what if we want to run only certain metrics? (e.g., only words)
   \item hard to change
+  \item mixed logic of the three metrics
+  \item run only certain metrics? (e.g., only words)
   \item hardcoded control flow of char-by-char iteration
-  \item almost no abstraction at all
-  \item rest of this presentation: how can we do better?
+  \item very little abstraction
+  \item can we do better?
   \end{itemize}
 \end{frame}
 
@@ -211,12 +241,14 @@
 
 \begin{frame}
   \frametitle{Monoids}
-  \huge
-  Monoids
+  \begin{center}
+    \huge
+    Monoids
+  \end{center}
 \end{frame}
 
 \begin{frame}
-  \frametitle{Let's Get Our FP Tools!}
+  \frametitle{Get Our FP Tools!}
   \begin{center}
     \includegraphics{static-images/toolbox.png}
     \includegraphics{static-images/construction-worker.png}
@@ -234,6 +266,7 @@
         def combine(x: A, y: A): A
         def empty: A
       }
+      //infix combine operator: x |+| y
     \end{minted}
   \end{itemize}
 \end{frame}
@@ -249,7 +282,7 @@
   \frametitle{Monoids: Counting Chars}
   \begin{itemize}
   \item counting chars is easy, use \texttt{(Int, +)} as a Monoid
-  \item count 1 (\texttt{mappend} 1) for every character
+  \item count 1 (\texttt{combine} 1) for every character
   \end{itemize}
   \vspace{1cm}
   \begin{tikzpicture}[node distance = 8mm, auto]
@@ -282,7 +315,7 @@
 \end{frame}
 
 \begin{frame}[fragile, t]
-  \frametitle{Monoids: Counting Chars}
+  \frametitle{Monoids: Counting Lines}
   \begin{itemize}
   \item to count lines, use again \texttt{(Int, +)} as a Monoid
   \item but \textbf{only} count 1 if the character is a \textbackslash{n}
@@ -332,6 +365,7 @@
 \begin{frame}
   \frametitle{Composing Monoids}
   \begin{itemize}
+  \item now: count chars \textbf{and} lines
   \item for multiple metrics, do multiple passes?!
   \item no \textemdash{} because monoids \textbf{compose}
     \begin{itemize}
@@ -349,7 +383,7 @@
   \item the Option-Monoid works like this:
   \end{itemize}
   \begin{center}
-    \vspace{1cm}
+    \vspace{5mm}
     \begin{minted}{scala}
       None |+| y === y
       x |+| None === x
@@ -414,11 +448,12 @@
 \begin{frame}
   \frametitle{Monoid Composition \textemdash{} Option And Stopwords}
   \begin{itemize}
-  \item just an example, more options:
+  \item use \texttt{Option} plus \texttt{Max,Min} to get longest/shortest non-stopword
+  \item more options:
     \begin{itemize}
     \item don't count chars like \texttt{!?,.} etc.\ using Option again
     \item use \texttt{Future/Task/IO} to get parallelism
-    \item and so much more
+    \item and sooo much more
     \end{itemize}
   \end{itemize}
 \end{frame}
@@ -492,25 +527,23 @@
   \frametitle{More Monoids}
   \begin{itemize}
   \item for \texttt{wc} we have two of our three target metrics
-  \item but actually, we can do a lot more than that!
+  \item but, we can do a lot more than that!
     \begin{itemize}
     \item find longest word
     \item count occurrences by word
     \item average word length (as own monoid or derive)
     \end{itemize}
+  \item map of key to value (for any monoid as value)
   \end{itemize}
 \end{frame}
 
 \begin{frame}
   \frametitle{Calculating With Monoids}
   \begin{itemize}
-  \item adding things (or multiplying)
-  \item min and max
-  \item map of key to value (for any monoid as value)
-  \item we can calculate our metrics with monoids
+  \item try to calculate our metrics for \texttt{wc} with monoids
   \item chars is the integer monoid with addition
   \item lines is also the integer monoid, but only count 1 if char is a newline
-  \item for words, for now just split the input and count 1 on every ``group''
+  \item for words\ldots
   \end{itemize}
 \end{frame}
 
@@ -520,15 +553,25 @@
   \only<2>{\inputminted[highlightlines={11}, fontsize=\footnotesize]{scala}{snippets/wc-monoid-char.scala}}
 \end{frame}
 
+\begin{frame}
+  \frametitle{Wordcount (Monoids, Chars)}
+  \begin{itemize}
+  \item the problem: we can't detect words
+  \item we require some form of memory or state
+  \item alternative idea: pre-split the text into words
+  \end{itemize}
+\end{frame}
+
 \begin{frame}[fragile]
   \frametitle{Wordcount (Monoids, Strings)}
-  \only<1>{\inputminted[highlightlines={13}, fontsize=\footnotesize]{scala}{snippets/wc-monoid-string.scala}}
-  \only<2>{\inputminted[fontsize=\footnotesize]{scala}{snippets/wc-monoid-string.scala}}
+  \only<1>{\inputminted[fontsize=\footnotesize]{scala}{snippets/wc-monoid-string.scala}}
+  \only<2>{\inputminted[highlightlines={13}, fontsize=\footnotesize]{scala}{snippets/wc-monoid-string.scala}}
 \end{frame}
 
 \begin{frame}
   \frametitle{Monoids \textemdash{} Review}
   \begin{itemize}
+  \item stuck for now, but:
   \item composes very well from small blocks
   \item easy to extend using custom metrics
   \item \texttt{Option} can lift any Semigroup
@@ -542,8 +585,10 @@
 
 \begin{frame}
   \frametitle{Applicative}
-  \huge
-  Applicatives
+  \begin{center}
+    { \huge Applicatives\\ }
+    (a.k.a. ``the bigger hammer'')
+  \end{center}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -552,7 +597,7 @@
   \item also called \textbf{Monoidal} Functors
   \item ``monoidal'' in the effects (pure = ``empty'' effect, \texttt{<*>} = ``combine effects'')
   \end{itemize}
-  \vfill
+  \vspace{5mm}
   \inputminted[fontsize=\small]{scala}{snippets/applicative-def.scala}
 \end{frame}
 
@@ -577,7 +622,7 @@
   \begin{itemize}
   \item but wait a moment, was all we learned about Monoids for nothing?!
   \item rejoice, we can reuse \textbf{everything} we have until now
-  \item actually two ways
+  \item in two ways
     \begin{itemize}
     \item lift Monoid inside Applicative
     \item promote any Monoid to an Applicative
@@ -591,13 +636,17 @@
   \item for every \texttt{F[A]}, given \texttt{Applicative[F]} and \texttt{Monoid[A]}
   \item we can define
   \end{itemize}
-
+  \vspace{5mm}
   \begin{minted}{scala}
     def empty: F[A] = pure(Monoid[A].empty)
 
     def combine(x: F[A], y: F[A]): F[A] =
       Applicative[F].map2(x, y)(Monoid[A].combine)
   \end{minted}
+  \begin{itemize}
+  \item that's Applicative $\rightarrow{}$ Monoid
+  \item what about Monoid $\rightarrow{}$ Applicative
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -605,11 +654,11 @@
   \begin{center}
     \inputminted[fontsize=\small]{scala}{snippets/const-def.scala}
   \end{center}
-  \vspace{1cm}
+  \vspace{5mm}
   \begin{itemize}
   \item simple case class with phantom type parameter
   \item \ldots{} and one actual value
-  \item let's define \texttt{Functor} and \texttt{Applicative}
+  \item define \texttt{Functor} and \texttt{Applicative}
   \end{itemize}
 \end{frame}
 
@@ -623,7 +672,7 @@
 \begin{frame}[fragile]
   \frametitle{The Const Datatype}
   \begin{center}
-    \inputminted[fontsize=\small, highlightlines={1,8,12}]{scala}{snippets/const-applicative.scala}
+    \inputminted[fontsize=\small, highlightlines={1,6,8}]{scala}{snippets/const-applicative.scala}
   \end{center}
 \end{frame}
 
@@ -670,7 +719,7 @@
   \item for applicatives, change to \texttt{traverse}
   \item we can derive \texttt{foldMap} from \texttt{traverse}
   \end{itemize}
-  \vspace{1cm}
+  \vspace{5mm}
   \inputminted[fontsize=\small]{scala}{snippets/traverse-def.scala}
 \end{frame}
 
@@ -727,18 +776,25 @@
     / or \texttt{Applicative} inside \texttt{Applicative}
   \item \texttt{Monad} is \textbf{not} closed, not guaranteed to be a \texttt{Monad} at all!
   \item and Product (Tuple) does not work either
-  \item \texttt{Monad}s are absolutely overrated
-  \item see ``The Essence Of The Iterator Pattern'', section 5.4
+  \item see also ``The Essence Of The Iterator Pattern'', section 5.4
   \end{itemize}
 \end{frame}
 
 \section{Streaming}\label{sec:streaming}
 
 \begin{frame}
-  \frametitle{Okay but traversing Lists/Iterators/etc is suboptimal!}
+  \frametitle{Streaming}
+  \begin{center}
+    \huge
+    Streaming
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{From Iteration To Streaming}
   \begin{itemize}
-  \item but there is no \texttt{traverse} for real streams?!
-  \item because there can't be one\ldots (why?)
+  \item there is no \texttt{traverse} for real streams?!
+  \item it does \textbf{not make sense} for a stream (why?)
   \item but: do we need the actual \texttt{traverse}
   \item realization: \texttt{traverse\_} (\texttt{Foldable}) is enough!
   \end{itemize}
@@ -750,6 +806,7 @@
   \item so what's the difference between \texttt{traverse} and \texttt{traverse\_}
   \item the regular \texttt{traverse} keeps the whole structure!
   \item the \texttt{traverse\_} variant only secquences effects!
+  \item can be implemented using a \texttt{fold}like method
   \item important: Applicative effect sequencing is \textbf{associative} as per the laws
   \item that means we can work on the stream in parallel
   \end{itemize}
@@ -760,9 +817,9 @@
   \begin{itemize}
   \item our framework needs the \texttt{traverse\_}
   \item can be implemented for anything that has a proper \texttt{fold}
-  \item let's do it for fs2 \texttt{Stream}
+  \item example with fs2 \texttt{Stream}
   \end{itemize}
-  \vspace{1cm}
+  \vspace{5mm}
   \inputminted[fontsize=\small]{scala}{snippets/fs2-traverse-stream.scala}
 \end{frame}
 
@@ -771,7 +828,7 @@
   \begin{itemize}
   \item example uses fs2 (also possible: akka-streams)
   \end{itemize}
-  \vspace{1cm}
+  \vspace{5mm}
   \inputminted[fontsize=\small]{scala}{snippets/fs2-count-words.scala}
 \end{frame}
 
@@ -798,6 +855,23 @@
 \end{frame}
 
 \begin{frame}
+  \frametitle{The End}
+  \begin{itemize}
+  \item \hyperref[sec:introduction]{Introduction}
+  \item \hyperref[sec:monoids]{Monoids}
+  \item \hyperref[sec:applicatives]{Applicatives}
+  \item \hyperref[sec:streaming]{Streaming}
+  \item \hyperref[sec:conclusion]{Conclusion}
+  \end{itemize}
+  \vfill
+  \begin{center}
+    \url{https://github.com/markus1189/flatmap-beautiful-composition}
+  \end{center}
+\end{frame}
+
+\appendix{}
+
+\begin{frame}
   \frametitle{Abstraction}
   \smartdiagramset{set color list={beamer@centricgreen!80,beamer@codeblue!80,red!50}}
   \smartdiagram[priority descriptive diagram]{
@@ -808,25 +882,13 @@
 \end{frame}
 
 \begin{frame}
-  \frametitle{The End}
-  \begin{itemize}
-  \item \hyperref[sec:introduction]{Introduction}
-  \item \hyperref[sec:monoids]{Monoids}
-  \item \hyperref[sec:applicatives]{Applicatives}
-  \item \hyperref[sec:streaming]{Streaming}
-  \item \hyperref[sec:conclusion]{Conclusion}
-  \end{itemize}
-  \vfill
-  \url{https://github.com/markus1189/flatmap-beautiful-composition}
-\end{frame}
-
-\appendix{}
-
-\begin{frame}
   \frametitle{Brand New: Selective Functors}
   \begin{itemize}
   \item like applicatives, we can use a product of selective functors
-  \item example: find the index of a word
+  \item example use case: find file containing a word
+  \item applicative: cannot stop and iterates over everything, static analysis using free structure
+  \item monad: can abort iteration after first match, no static analysis
+  \item selective: abort early and also analysis via Free structure
   \end{itemize}
 \end{frame}
 

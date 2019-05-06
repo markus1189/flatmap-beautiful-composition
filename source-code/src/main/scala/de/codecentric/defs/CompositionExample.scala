@@ -12,7 +12,7 @@ class CompositionExample {
 
   //snippet:compose-applicative-1
   def example1: Const[(Option[Int], Int), JFrame] =
-    Const.of[JFrame](Option(1) -> 5)
+    Const.of[JFrame]((Option(1), 5))
   //end
 
   //snippet:compose-applicative-2
