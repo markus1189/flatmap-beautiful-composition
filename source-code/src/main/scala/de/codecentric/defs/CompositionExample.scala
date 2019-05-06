@@ -7,11 +7,11 @@ import javax.swing.JFrame
 
 class CompositionExample {
   //snippet:compose-applicative-monoid
-  def monoid: (Option[Int], Int) = (Option(1), 5)
+  def example1Monoid: (Option[Int], Int) = (Option(1), 5)
   //end
 
   //snippet:compose-applicative-1
-  def example1: Const[(Option[Int], Int), JFrame] =
+  def example1Applicative: Const[(Option[Int], Int), JFrame] =
     Const.of[JFrame]((Option(1), 5))
   //end
 

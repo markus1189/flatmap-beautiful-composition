@@ -22,10 +22,13 @@ trait Wc {
       }
     //end
 
-    val Tuple2K(Tuple2K(chars_, lines), words_) = input.traverse_ { c =>
-      Tuple2K(Tuple2K(countChars[Unit](c), countLines[Unit](c)),
-              countWords[Unit](c))
-    }
+    val Tuple2K(Tuple2K(chars_, lines), words_) =
+      //snippet:count-words-applicative
+      input.traverse_ { c =>
+        Tuple2K(Tuple2K(countChars[Unit](c), countLines[Unit](c)),
+                countWords[Unit](c))
+      }
+    //end
 
     (lines.getConst, words_.value.runA(false).value.getConst, chars_.getConst)
   }

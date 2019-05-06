@@ -2,7 +2,7 @@
 
 % Must be loaded first
 \usepackage{tikz}
-\usetikzlibrary{shapes,arrows}
+\usetikzlibrary{shapes,arrows,positioning,fit,calc}
 
 \usepackage[utf8]{inputenc}
 \usepackage{textpos}
@@ -259,14 +259,14 @@
   \frametitle{Monoids}
   \begin{itemize}
   \item Quick Recap: Monoids
-  \item binary method \texttt{combine} and nullary method \texttt{combine}
+  \item binary method \texttt{combine} and nullary method \texttt{empty}
     \vspace{1cm}
     \begin{minted}{scala}
-      trait Monoid[A] {
-        def combine(x: A, y: A): A
-        def empty: A
-      }
-      //infix combine operator: x |+| y
+trait Monoid[A] {
+  def combine(x: A, y: A): A
+  def empty: A
+}
+//infix combine operator: x |+| y
     \end{minted}
   \end{itemize}
 \end{frame}
@@ -379,15 +379,20 @@
   \frametitle{Monoid Composition \textemdash{} Induction}
   \begin{itemize}
   \item some Monoids are based inductively on others
+  \end{itemize}
+  \begin{minted}{scala}
+def optionMonoid[A: Monoid] = new Monoid[Option[A]] { /*...*/ }
+  \end{minted}
+  \begin{itemize}
   \item Option, Future, IO, Task, \ldots{}
   \item the Option-Monoid works like this:
   \end{itemize}
   \begin{center}
     \vspace{5mm}
     \begin{minted}{scala}
-      None |+| y === y
-      x |+| None === x
-      Some(x) |+| Some(y) === Some(x |+| y)
+None |+| y === y
+x |+| None === x
+Some(x) |+| Some(y) === Some(x |+| y)
     \end{minted}
   \end{center}
 \end{frame}
@@ -468,10 +473,19 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}
+\begin{frame}[fragile]
   \frametitle{Monoid Composition \textemdash{} Tuple}
   \begin{itemize}
   \item if \texttt{A} and \texttt{B} have a Monoid instance, so does \texttt{(A,B)}
+  \end{itemize}
+  \begin{minted}{scala}
+def tupleMonoid[A, B]: Monoid[(A, B)] = new Monoid[(A, B)] {
+  def empty = (Monoid[A].empty, Monoid[B].empty)
+
+  def combine(x: (A, B), y: (A, B)) = (x._1 |+| y._1, x._2 |+| y._2)
+}
+  \end{minted}
+  \begin{itemize}
   \item combine the two \texttt{A}'s and the two \texttt{B}'s
   \item we can fuse our two metrics!
   \end{itemize}
@@ -537,16 +551,6 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}
-  \frametitle{Calculating With Monoids}
-  \begin{itemize}
-  \item try to calculate our metrics for \texttt{wc} with monoids
-  \item chars is the integer monoid with addition
-  \item lines is also the integer monoid, but only count 1 if char is a newline
-  \item for words\ldots
-  \end{itemize}
-\end{frame}
-
 \begin{frame}[fragile]
   \frametitle{Wordcount (Monoids, Chars)}
   \only<1>{\inputminted[fontsize=\footnotesize]{scala}{snippets/wc-monoid-char.scala}}
@@ -609,11 +613,11 @@
   \item \texttt{product}\footnote{from Semigroupal} is like \texttt{combine} \textit{for effects}
   \end{itemize}
   \begin{minted}{scala}
-    def empty      : F
-    def pure(x: A) : F[A]
+def empty      : F
+def pure(x: A) : F[A]
 
-    def combine( x: F,     y: F)   : F
-    def product(fa: F[A], fb: F[B]): F[A]
+def combine( x: F,     y: F)   : F
+def product(fa: F[A], fb: F[B]): F[(A, B)]
   \end{minted}
 \end{frame}
 
@@ -638,10 +642,10 @@
   \end{itemize}
   \vspace{5mm}
   \begin{minted}{scala}
-    def empty: F[A] = pure(Monoid[A].empty)
+def empty: F[A] = pure(Monoid[A].empty)
 
-    def combine(x: F[A], y: F[A]): F[A] =
-      Applicative[F].map2(x, y)(Monoid[A].combine)
+def combine(x: F[A], y: F[A]): F[A] =
+  Applicative[F].map2(x, y)(Monoid[A].combine)
   \end{minted}
   \begin{itemize}
   \item that's Applicative $\rightarrow{}$ Monoid
@@ -665,6 +669,8 @@
 \begin{frame}[fragile]
   \frametitle{The Const Datatype}
   \begin{center}
+    \inputminted[fontsize=\small]{scala}{snippets/const-def.scala}
+    \vfill
     \inputminted[fontsize=\small]{scala}{snippets/const-try-applicative.scala}
   \end{center}
 \end{frame}
@@ -672,7 +678,9 @@
 \begin{frame}[fragile]
   \frametitle{The Const Datatype}
   \begin{center}
-    \inputminted[fontsize=\small, highlightlines={1,6,8}]{scala}{snippets/const-applicative.scala}
+    \inputminted[fontsize=\small]{scala}{snippets/const-def.scala}
+    \vfill
+    \inputminted[fontsize=\small, highlightlines={1,6,9}]{scala}{snippets/const-applicative.scala}
   \end{center}
 \end{frame}
 
@@ -712,6 +720,61 @@
   \inputminted[fontsize=\small]{scala}{snippets/compose-applicative-2.scala}
 \end{frame}
 
+\begin{frame}[fragile]
+  \frametitle{Composition And Applicatives}
+  \begin{center}
+    \begin{tikzpicture}[
+      node distance=10mm,
+      block/.style={rectangle, draw=black!50, anchor=west, font=\large\ttfamily}
+      ]
+      \node (io) { IO };
+
+      \node (const) [fill=beamer@codeblue, below=of io.west, block, xshift=2mm] { Const(1) };
+      \node (valid) [fill=beamer@centricgreen, right=of const.east, block] { Validated.Valid("...") };
+
+      \node [draw=black!50, fit={(io) (const) (valid)}] {};
+      \node [draw=black!50, fit={(const) (valid)}] {};
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Composition And Applicatives}
+  \begin{center}
+    \begin{tikzpicture}[
+      node distance=10mm,
+      block/.style={rectangle, draw=black!50, anchor=west, font=\large\ttfamily}
+      ]
+      \node (tuple2k) { Tuple2K };
+
+      \node (io1) [fill=beamer@codeblue, below=of tuple2k.west, block, xshift=2mm] { IO(<operation 1>) };
+      \node (io2) [fill=beamer@centricgreen, right=of io1.east, block] { IO(<operation 2>) };
+
+      \node [draw=black!50, fit={(io1) (io2) (tuple2k)}] {};
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Composition And Applicatives}
+  \begin{center}
+    \begin{tikzpicture}[
+      node distance=10mm,
+      block/.style={rectangle, draw=black!50, anchor=west, font=\large\ttfamily}
+      ]
+      \node (tuple2k) { Tuple2K };
+
+      \node (io1) [fill=beamer@codeblue, below=of tuple2k.west, block, xshift=2mm] { IO(<operation 1>) };
+      \node (tuple2) [right=of io1.east] { Tuple2K };
+      \node (io2) [fill=beamer@codeblue, below=of tuple2.west, block, xshift=2mm] { IO(<operation 2>) };
+      \node (io3) [fill=beamer@codeblue, right=of io2.east, block] { IO(<operation 3>) };
+
+      \node [draw=black!50, fit={(io1) (io2) (io3) (tuple2k)}] {};
+      \node [draw=black!50, fit={(io2) (io3) (tuple2)}] {};
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
 \begin{frame}
   \frametitle{Traversing With Applicatives}
   \begin{itemize}
@@ -724,19 +787,10 @@
 \end{frame}
 
 \begin{frame}
-  \frametitle{Metrics via Applicatives}
-  \begin{itemize}
-  \item using applicatives we have all the power we need
-  \item use State, Task, IO, \ldots
-  \end{itemize}
-\end{frame}
-
-\begin{frame}
   \frametitle{Counting Words \textemdash{} With State}
   \begin{itemize}
   \item we can re-use the counting of chars and lines (and any monoidal metric)
   \item as seen, have to be more clever for words
-  \item idea: keep track of state: \textbf{inside} vs \textbf{outside} a word
   \item how to do this with applicatives?
   \item \textbf{State}, IO, ST, \ldots{}
   \end{itemize}
@@ -747,23 +801,29 @@
   \inputminted[fontsize=\small]{scala}{snippets/count-words-state.scala}
 \end{frame}
 
-\begin{frame}
-  \frametitle{Overview}
-  \def\firstcircle{(0,0) ellipse (20mm and 5mm)}
-  \def\secondcircle{(0,0) ellipse (25mm and 12mm)}
-  \def\thirdcircle{(0,0) ellipse (35mm and 20mm)}
+\begin{frame}[fragile]
+  \frametitle{Counting Words \textemdash{} With State}
   \begin{center}
-    \begin{tikzpicture}
-      \begin{scope}[fill opacity=0.5]
-        \fill[beamer@centricgreen!90] \firstcircle;
-        \fill[beamer@codeblue!90] \secondcircle;
-        \fill[red!5] \thirdcircle;
-        \draw \firstcircle node  {$Semigroup$};
-        \draw \secondcircle node [yshift=-8mm] {$Monoid$};
-        \draw \thirdcircle node [yshift=-16mm] {$Applicative$};
-      \end{scope}
+    \begin{tikzpicture}[
+      node distance=10mm,
+      block/.style={rectangle, draw=black!50, anchor=west, font=\large\ttfamily}
+      ]
+      \node (state) { State[Boolean, ?] };
+
+      \node (const) [fill=beamer@codeblue, below=of state.west, block, xshift=2mm] { Const[Int, ?] };
+
+      \node [draw=black!50, fit={(state) (const)}] {};
     \end{tikzpicture}
   \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Counting Words \textemdash{} With State}
+  \begin{itemize}
+  \item putting it together
+  \end{itemize}
+  \vspace{5mm}
+  \inputminted[fontsize=\small]{scala}{snippets/count-words-applicative.scala}
 \end{frame}
 
 \begin{frame}
@@ -798,6 +858,8 @@
   \item but: do we need the actual \texttt{traverse}
   \item realization: \texttt{traverse\_} (\texttt{Foldable}) is enough!
   \end{itemize}
+  \vspace{5mm}
+  \inputminted[fontsize=\small]{scala}{snippets/foldable-traverse.scala}
 \end{frame}
 
 \begin{frame}
@@ -805,7 +867,7 @@
   \begin{itemize}
   \item so what's the difference between \texttt{traverse} and \texttt{traverse\_}
   \item the regular \texttt{traverse} keeps the whole structure!
-  \item the \texttt{traverse\_} variant only secquences effects!
+  \item the \texttt{traverse\_} variant only sequences effects!
   \item can be implemented using a \texttt{fold}like method
   \item important: Applicative effect sequencing is \textbf{associative} as per the laws
   \item that means we can work on the stream in parallel
@@ -825,10 +887,6 @@
 
 \begin{frame}[fragile]
   \frametitle{Counting Words With fs2}
-  \begin{itemize}
-  \item example uses fs2 (also possible: akka-streams)
-  \end{itemize}
-  \vspace{5mm}
   \inputminted[fontsize=\small]{scala}{snippets/fs2-count-words.scala}
 \end{frame}
 
@@ -848,9 +906,10 @@
 \begin{frame}
   \frametitle{Conclusion}
   \begin{itemize}
-  \item we can add metrics easily
-  \item control flow can be easily customized
-  \item (sometimes) Monads are overrated
+  \item flexible and \texttt{composable} way to cacluate metrics over text
+  \item using \texttt{Monoid} and \texttt{Applicative}
+  \item works with iteration and streaming
+  \item Principle Of Least Power: sometimes Monads are overrated
   \end{itemize}
 \end{frame}
 
@@ -870,6 +929,25 @@
 \end{frame}
 
 \appendix{}
+
+\begin{frame}
+  \frametitle{Overview}
+  \def\firstcircle{(0,0) ellipse (20mm and 5mm)}
+  \def\secondcircle{(0,0) ellipse (25mm and 12mm)}
+  \def\thirdcircle{(0,0) ellipse (35mm and 20mm)}
+  \begin{center}
+    \begin{tikzpicture}
+      \begin{scope}[fill opacity=0.5]
+        \fill[beamer@centricgreen!90] \firstcircle;
+        \fill[beamer@codeblue!90] \secondcircle;
+        \fill[red!5] \thirdcircle;
+        \draw \firstcircle node  {$Semigroup$};
+        \draw \secondcircle node [yshift=-8mm] {$Monoid$};
+        \draw \thirdcircle node [yshift=-16mm] {$Applicative$};
+      \end{scope}
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
 
 \begin{frame}
   \frametitle{Abstraction}
